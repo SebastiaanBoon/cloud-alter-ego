@@ -1,13 +1,13 @@
-# doppel
+# cloud-alter-ego
 
 **Your cloud alter ego for AI coding agents.** It remembers what you did yesterday, on which laptop,
 with which account, and makes every agent follow your rules.
 
-doppel is a Git repo that becomes the shared memory of every agent you work with: Claude Code on
-any account and any device (including Remote Control from your phone) and Codex. Hooks inject your
-working rules at the start of every session, log every question and answer into a journal per client
-or project, save full transcripts at the end, and push it all, so every device and account always
-works from the same brain.
+cloud-alter-ego is a Git repo that becomes the shared memory of every agent you work with: Claude
+Code on any account and any device (including Remote Control from your phone) and Codex. Hooks inject
+your working rules at the start of every session, log every question and answer into a journal per
+client or project, save full transcripts at the end, and push it all, so every device and account
+always works from the same brain.
 
 ```
 you ask something ──> UserPromptSubmit hook ──> journal line ──> git push

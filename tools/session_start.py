@@ -1,5 +1,5 @@
 """
-SessionStart hook: tells every new Claude Code session where the doppel repo lives, which
+SessionStart hook: tells every new Claude Code session where the cloud-alter-ego repo lives, which
 context is active, and injects the full preferences.md.
 
 preferences.md is injected verbatim on purpose. Only pointing to the file does not work: agents
@@ -32,11 +32,11 @@ REQUIRED_HOOKS = [
     ("PreToolUse", "Bash|PowerShell", "block_ai_attribution.py", 10),
 ]
 
-BLOCK_START = "<!-- doppel:start -->"
-BLOCK_END = "<!-- doppel:end -->"
+BLOCK_START = "<!-- cloud-alter-ego:start -->"
+BLOCK_END = "<!-- cloud-alter-ego:end -->"
 CLAUDE_MD_BLOCK = """
 {start}
-## doppel (shared memory, source of truth)
+## cloud-alter-ego (shared memory, source of truth)
 
 Your context, working rules, clients and projects live in the Git repo {base}. Git is the source
 of truth: every device and every AI account works from this repo and writes straight back to it.
@@ -92,7 +92,7 @@ def write_json_atomic(path, data):
     import shutil
     import time
     if os.path.exists(path):
-        shutil.copy2(path, path + ".bak-doppel-" + time.strftime("%Y%m%d-%H%M%S"))
+        shutil.copy2(path, path + ".bak-cloud-alter-ego-" + time.strftime("%Y%m%d-%H%M%S"))
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
@@ -163,7 +163,7 @@ def main():
     slug = note.current_context()
     note_cmd = PY_EXE + " " + os.path.join(BASE, "tools", "note.py")
     lines = [
-        "doppel (your shared memory: context, working rules, clients and projects) lives in " + BASE + ".",
+        "cloud-alter-ego (your shared memory: context, working rules, clients and projects) lives in " + BASE + ".",
         "Active context according to .current-context: " + slug + ".",
         "For client or project work, first read its README.md and the newest file in its journal/ folder.",
         "Set the context as soon as it is known: " + note_cmd + " --set <slug> (see --list, create with --new-client or --new-project).",

@@ -70,7 +70,7 @@ it, write the command again without that line.
 - Messages to clients: stay close to the user's own text and length, at the level of the recipient,
   no technical details the recipient does not act on. "Prettify" means only wording and punctuation.
 
-## doppel (this repo)
+## cloud-alter-ego (this repo)
 - At session start read the README and newest journal of the context, set it with
   `tools/note.py --set <slug>`, write one journal line per turn. Do not commit this repo yourself,
   the hooks do that.

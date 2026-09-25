@@ -38,7 +38,7 @@ import session_start as ss  # noqa: E402
 AUTO_JOURNAL = os.path.join(TOOLS, "auto_journal.py")
 AGENTS_BLOCK = """
 {start}
-## doppel (shared memory, source of truth)
+## cloud-alter-ego (shared memory, source of truth)
 
 Your context, working rules, clients and projects live in the Git repo {base}.
 Codex has no session-start hook, so do this yourself at the start of every session:
@@ -154,7 +154,7 @@ def install_codex():
         say("Codex notify already logs to this repo.")
     else:
         if os.path.exists(cfg):
-            shutil.copy2(cfg, cfg + ".bak-doppel")
+            shutil.copy2(cfg, cfg + ".bak-cloud-alter-ego")
         items = [sys.executable, AUTO_JOURNAL, "--codex"] + [str(x) for x in existing]
         with open(cfg, "w", encoding="utf-8", newline="\n") as f:
             f.write(replace_notify(text, items))
@@ -227,14 +227,14 @@ def main():
     if not check_prerequisites():
         return 1
     if "--uninstall" in args:
-        print("Removing doppel from this machine:")
+        print("Removing cloud-alter-ego from this machine:")
         for d in ss.claude_config_dirs():
             uninstall_claude(d)
         uninstall_codex()
         print("Done. Attribution settings were left as they are. Your repo is untouched.")
         return 0
 
-    print("Installing doppel from " + BASE)
+    print("Installing cloud-alter-ego from " + BASE)
     warn_if_public()
     changed = ss.ensure_setup(create_default=True)
     for d in ss.claude_config_dirs():

@@ -1,6 +1,6 @@
 # How it works
 
-doppel has two layers. The cheap layer costs no model tokens and runs through hooks. The
+cloud-alter-ego has two layers. The cheap layer costs no model tokens and runs through hooks. The
 meaningful layer is one short line per turn that the agent writes itself.
 
 ## The hooks
