@@ -1,0 +1,5 @@
+.current-context
+.auto-journal/
+__pycache__/
+tools/sessions.json
+raw-export/

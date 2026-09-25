@@ -1,0 +1,45 @@
+# Azure App Service, Static Web Apps and GitHub Actions
+
+## Deploying
+
+- Code deploys: `azure/login` with a service principal, then `az webapp deploy --async true`. A
+  synchronous deploy regularly times out on small (B1) plans. Follow it with a health check on an
+  `/api/health` endpoint and, ideally, a check that the deployed commit is the expected one.
+- Container deploys: build and push to Azure Container Registry, then
+  `az webapp config container set`. That command can leave `DOCKER_REGISTRY_SERVER_USERNAME/PASSWORD`
+  app settings behind that take precedence over managed-identity pulls; delete them after setting
+  the container.
+- A stale `appCommandLine` (startup command) overrides the Docker `CMD`. Clear it on every deploy
+  (`az webapp update` or `az webapp config set --startup-file ""`).
+- Turn Always On on for APIs that must not unload when idle.
+- Node APIs with Prisma: run `prisma generate` while building the deploy package, and start the HTTP
+  server before database setup, otherwise the container can miss the startup timeout.
+- Don't retry a deploy in a loop when another deploy is running: parallel deploys give 409 conflicts
+  and block the app.
+
+## Shared App Service plans
+
+- Many small apps on one plan is cheap, but one heavy job takes all of them down (502s on the whole
+  plan). Never run heavy computation on a shared plan; precompute elsewhere and push results.
+- Putting a memory-hungry API in its own container isolates its memory from the other apps.
+
+## Outbound IP blocks
+
+- Some public data sources block Azure's outbound IP ranges entirely (Yahoo Finance is one). Pattern
+  that works: a small job queue on the app (`trigger`, `claim` with a lease, `complete`) and a worker
+  on a machine that is not blocked, started by a scheduled task. The app does all computation, the
+  worker only fetches and forwards. Protect the worker endpoints with a bearer token.
+- Undocumented endpoints can block an IP for hours after too many requests in a day; spread the load.
+
+## Static Web Apps
+
+- Deploy with the `Azure/static-web-apps-deploy` action or the SWA CLI and a deployment token. Pull
+  requests get a staging environment that the close-PR job removes.
+- Add the Static Web App URL (and custom domain) to the API's CORS origins.
+- Payment providers redirect to the URL you pass; keep a `FRONTEND_URL` setting pointing at the live
+  site.
+
+## Domains
+
+- Registering some country domains through the Azure ARM API fails on registrar fields that the ARM
+  schema does not have. Register through the portal or a registrar and only bind the domain in Azure.
