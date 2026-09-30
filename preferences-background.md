@@ -149,3 +149,67 @@ recipient needs to know. When in doubt about a detail, leave it out.
 When new things land in the root, the repo becomes a pile nobody can navigate. Everything has a
 place: clients, projects, skills, techniques, or an existing base file. And the repo only works as a
 memory if it is complete: every client, project and repo belongs in it.
+
+## Work in the user's own folder, simple solutions, push means everything
+
+Agents like to create worktrees or copies elsewhere; the user then cannot see the changes where they
+look. Temporary files left behind clutter the repo. Over-engineered designs (three services where one
+would do) cost money and attention forever. And "push it" was more than once read as "push the one
+thing I just did", leaving other finished work behind.
+
+**How to apply:** branch in the user's folder, scratchpad for temporary files, the smallest design that
+works, and after a push `git status` must be clean.
+
+## Rebuild every field, and only real changes from tool exports
+
+When an existing export or report is rebuilt, silently skipping fields that were hard to find is the
+failure mode: it looks finished and is not. Tool exports (BI files, notebooks, low-code definitions)
+often rewrite formatting or whitespace on every save; committing that noise hides the real change.
+
+**How to apply:** list all source fields first and tick them off. Missing source: placeholder plus a
+note. Before committing a tool export, diff it and keep only the meaningful lines.
+
+## Permission to run applies once
+
+A "yes, run it" for one load or model run is not a standing permission. Some runs the user wants to do
+themselves, because they cost capacity or touch production.
+
+**How to apply:** ask again for the next run, or hand over the exact command.
+
+## Only report done after a full check
+
+In a long debugging session an agent repeatedly said "fixed" after checking two or three examples,
+and the user kept finding the same class of bug in the rest of the data within minutes. Each time it
+cost trust. A check over the whole population is usually cheap.
+
+**How to apply:** loop over every row, item or member before saying "done". If you only sampled, say so
+with numbers.
+
+## Never use a pasted password
+
+Users under time pressure sometimes paste a real admin password into the chat. Using it puts a live
+secret in tool arguments, shell history and transcripts, and rewards the habit. A device-code sign-in
+lets the user authenticate directly with the provider on their phone, so the password is never needed.
+Granting outsiders access to a system deserves a firm pause: proceed once there is concrete evidence,
+such as a forwarded email naming the people and the reason.
+
+**How to apply:** propose device code first. If a password shows up anyway, do not use it and advise
+changing it.
+
+## Messages in the user's voice
+
+Drafts in a stiff corporate tone ("We hereby...") read as not written by the user. Rewriting sentences
+the user already approved is frustrating and loses their wording.
+
+**How to apply:** first person, plain words, their usual greeting and sign-off, only what the recipient
+needs. Change only what was asked.
+
+## Nothing stays only in a local memory file
+
+Agents with a built-in memory store learned rules and procedures in local files per project folder.
+Another agent, device or folder never sees them, so the same lesson gets relearned. Several useful
+runbooks were found only by accident.
+
+**How to apply:** when you save something to a local memory, also put it here (rule, skill or project
+README) and let the memory point to it. The context-doctor skill checks for this.
+
