@@ -48,10 +48,11 @@ another device    ──> git pull on start     ──> same memory everywhere
 | [personal.md](personal.md) | Optional personal context (template) |
 | [clients/](clients/README.md) | One folder per client: README with stack and incident history, `journal/`, `sessions/` |
 | [projects/](projects/README.md) | One folder per own project, plus the infrastructure they share |
-| [skills/](skills/README.md) | Runbooks: resume Remote Control sessions, read WhatsApp Web, lead outreach |
-| [techniques/](techniques/README.md) | Reusable technical knowledge: Fabric, fabric-cicd, dbt, Databricks, Azure, Entra ID, Power BI, Git |
+| [skills/](skills/README.md) | Runbooks: resume Remote Control sessions, read WhatsApp Web, client presentations, repo check-up, lead outreach |
+| [techniques/](techniques/README.md) | Reusable technical knowledge: Fabric, fabric-cicd, dbt, Databricks, Azure, Entra ID, Microsoft 365 groups, Power BI, Git |
 | [WORKFLOW.md](WORKFLOW.md) | How the hooks, contexts and syncing work |
 | [tools/](tools/) | The scripts behind it all |
+| [CHANGELOG.md](CHANGELOG.md) | What changed per release |
 
 ## Daily use
 
@@ -69,6 +70,8 @@ another device    ──> git pull on start     ──> same memory everywhere
 - Never store secrets here. Resource names are fine, keys and passwords are not.
 - `.current-context`, `.auto-journal/` and `tools/sessions.json` are local and gitignored.
 - The hooks never fail hard: errors go to `.auto-journal/errors.log` and a session never gets stuck.
+- Journals use a union merge (`.gitattributes`), so parallel sessions never block each other on a
+  journal conflict.
 
 ## Requirements
 
