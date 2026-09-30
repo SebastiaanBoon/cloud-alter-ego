@@ -15,3 +15,12 @@
 
 - <Pitfalls, limits and decisions an agent must know before touching this project.>
 - <Where the deeper docs live, for example CLAUDE.md or SPEC.md in the repo.>
+
+## Skills and tools
+
+Runbooks and scripts that only apply to this project live next to this README, in `skills/` and
+`tools/`, and are listed here. Remove this section when there are none.
+
+| Skill | When |
+|---|---|
+| <skills/NAME.md> | <WHEN TO USE IT> |
