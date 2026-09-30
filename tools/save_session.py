@@ -119,7 +119,12 @@ def main():
         if not branch or branch == "HEAD" or not git("remote").stdout.strip():
             return
         # Other devices push too; without a pull the push fails silently and the repo drifts apart.
-        git("pull", "-q", "--rebase", "--autostash", "origin", branch)
+        r = git("pull", "-q", "--rebase", "--autostash", "origin", branch)
+        if r.returncode != 0:
+            # Never leave the repo halfway through a rebase: every later hook would fail on it.
+            # The local commit stays and goes out with the next successful save.
+            git("rebase", "--abort")
+            return
         git("push", "origin", branch)
     except Exception:
         pass

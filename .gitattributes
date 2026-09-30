@@ -1,0 +1,3 @@
+# Journals are append-only logs. Several sessions and devices write to them at the same time, so
+# keep both sides on a merge or rebase instead of stopping with a conflict.
+**/journal/*.md merge=union
