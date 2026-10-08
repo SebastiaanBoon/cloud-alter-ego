@@ -59,6 +59,10 @@ style (font, colours, logo source, closing slide) in the user's own context, not
 - No invented numbers. Only figures you recalculated or that are in the journal or README.
 - No em or en dashes, also not in the notes.
 - Every slide gets speaker notes.
+- One message per slide and nothing twice. A slide that largely repeats another is merged or dropped;
+  an extra slide makes the story longer and weaker. Costs only on the cost slide.
+- Updating an existing deck: only what is asked, no slides, boxes or comparisons of your own. Save on
+  the original; when the file is open, say so and wait, never a copy named "(updated)".
 
 ## Build and check
 

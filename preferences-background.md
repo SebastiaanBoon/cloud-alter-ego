@@ -213,3 +213,44 @@ runbooks were found only by accident.
 **How to apply:** when you save something to a local memory, also put it here (rule, skill or project
 README) and let the memory point to it. The context-doctor skill checks for this.
 
+## Client deployments run through the client's CI, containers built in the pipeline
+
+A server for a client was first built with GitHub Actions because that was what the user's own test
+tenant used, and that choice slipped into an estimate for the client. The user's clients work in
+Azure DevOps, so the default is their CI; GitHub only when the client asks for it. The same day a code
+deploy that built on a shared B1 plan took the plan to 100% CPU and the other apps on it went down:
+build the image in the pipeline and let the web app only pull it. And `az webapp config appsettings
+set` from Git Bash turned `DATA_DIR=/home/data` into `C:/Program Files/Git/home/data`, so the app wrote
+its data inside the container and lost it at every restart. `MSYS_NO_PATHCONV=1` (or PowerShell)
+prevents that.
+
+## Agent work stays visible
+
+Another agent started three tasks headless (`claude -p`). The user could not follow them in the
+session list and asked to always run agent work in sessions they can watch, also for night work and
+for resuming after usage limits.
+
+## No offers the user did not make
+
+An answer to a client got an extra sentence offering an overview of expiring secrets. It was not in the
+user's text and creates work they did not plan. Client messages contain only what the user wrote.
+
+## Tone in documents the reader reads
+
+A development plan said "as soon as possible", "substantially more involved" and "in consultation with
+<manager> I will", while that manager reads the plan. The user found it unprofessional and not
+balanced. Businesslike, weighed wording, and address the reader, not about them.
+
+## Updating an existing client document
+
+Updating two client decks and an estimate, a subagent added technical text the readers do not act on,
+a cost box on a slide about something else, a slide that repeated an earlier one and a made-up
+metaphor. The user: "it only matters to them what it costs", "keep the message central", "I am
+drowning in jargon". Plain language a finance manager reads easily, technique in the speaker notes,
+one message per slide, and save on the original instead of next to it.
+
+## Mail drafts through Graph as HTML
+
+A reply draft created through Graph with a plain-text comment lost every line break and arrived as
+one block. Set the body as HTML with one `<p>` per paragraph (and `<br>` inside a paragraph), above
+the quoted original.

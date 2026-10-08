@@ -4,6 +4,22 @@ All notable changes to this template are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2026-10-08
+
+### Added
+
+- Working rules with background: client builds and deploys through the client's own CI with containers
+  built in the pipeline, the Git Bash path conversion for az, visible agent work, no offers the user
+  did not make, tone in documents the reader reads, updating existing client documents, and mail
+  drafts through Graph as HTML.
+- Technique `entra-id-and-oauth`: an MCP server behind Entra ID (client credentials for Claude, the
+  AADSTS9010010 resource rule, access through Assignment required and app roles, a role for a group
+  of key users, on-behalf-of).
+- Technique `azure-app-service`: persistent data under `/home`, the Kudu VFS API, a quiet log stream,
+  and syncing app data to git through the pipeline instead of a token in the app.
+- Skill `client-presentation`: one message per slide, and only what is asked when updating a deck.
+- Skill `whatsapp-web-reading`: pairing with a phone number, background tabs and reading poll votes.
+
 ## [0.2.0] - 2026-09-30
 
 ### Added
@@ -34,5 +50,6 @@ All notable changes to this template are listed here. The format follows
 - First release: session hooks (auto journal, session save, session start), installer with uninstall,
   attribution block hook, Codex notify chaining, default working rules, skills and techniques.
 
+[0.3.0]: https://github.com/SebastiaanBoon/cloud-alter-ego/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/SebastiaanBoon/cloud-alter-ego/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/SebastiaanBoon/cloud-alter-ego/releases/tag/v0.1.0
