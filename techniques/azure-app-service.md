@@ -43,3 +43,26 @@
 
 - Registering some country domains through the Azure ARM API fails on registrar fields that the ARM
   schema does not have. Register through the portal or a registrar and only bind the domain in Azure.
+
+## Persistent data, files and logs
+
+- Only `/home` survives restarts and deploys (with `WEBSITES_ENABLE_APP_SERVICE_STORAGE=true` for a
+  container). Point data folders there, for example `DATA_DIR=/home/data`. Any other path is inside the
+  container and is gone at the next restart.
+- Kudu's VFS API reads and writes those files without a shell: `https://<app>.scm.azurewebsites.net/api/vfs/<path>`
+  with an Azure management token (`az account get-access-token --resource https://management.azure.com/`)
+  of an identity with Website Contributor. PUT and DELETE need `If-Match: *`. A pipeline can use it with
+  its deploy identity, so the app itself needs no extra credentials.
+- Log stream: log only what matters (real requests on the app, errors, the app's own events). Internet
+  scanners hit every App Service (`/wp-login.php` and the like); filter their 404s and the start and stop
+  lines of the web server out of the access log.
+
+## Syncing app data to git without secrets in the app
+
+When an app produces something that should be visible in git (generated config, learned rules), let the
+repository's pipeline do the sync instead of giving the app a git token: read the files through Kudu with
+the deploy identity (OIDC in GitHub Actions, workload identity federation in Azure Pipelines), commit on a
+branch, open a pull request and merge it. GitHub Actions needs "Allow GitHub Actions to create and approve
+pull requests" (repository setting, also via `PUT /repos/<owner>/<repo>/actions/permissions/workflow`).
+A merge by the workflow token does not trigger other workflows, so there is no loop; exclude the synced
+files from the deploy trigger.

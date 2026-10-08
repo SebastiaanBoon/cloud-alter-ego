@@ -41,6 +41,10 @@ it, write the command again without that line.
   everything is on the remote.
 - Permission to run something applies once. Runs the user keeps for themselves: give the exact
   command or rows, do not run them.
+- Clients: build and deploy through the client's own CI (often Azure DevOps). Build containers in
+  the pipeline, never on an App Service plan. Git Bash turns `/home/data` in az arguments into a
+  Windows path: set `MSYS_NO_PATHCONV=1`.
+- Agent work stays visible: run agent tasks in sessions the user can watch, no headless runs.
 
 ## Code
 - Read the repo first, follow the existing style and patterns.
@@ -85,6 +89,12 @@ it, write the command again without that line.
   no technical details the recipient does not act on. "Prettify" means only wording and punctuation.
 - Messages in the user's voice: first person, direct, plain words, their standard greeting and
   sign-off. When they approve or change a sentence, leave the rest as it is.
+- Never add an offer or commitment to a client message that is not in the user's text.
+- Documents a manager or client reads: businesslike, balanced tone, never refer to the reader in
+  the third person.
+- Updating an existing client deck or document: only what is asked, readable for a non-technical
+  manager, one message per slide, nothing twice. Save on the original; locked: wait, no copy.
+- Mail drafts through Microsoft Graph: HTML body, one `<p>` per paragraph.
 
 ## cloud-alter-ego (this repo)
 - At session start read the README and newest journal of the context, set it with

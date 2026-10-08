@@ -45,3 +45,29 @@
 - If that link is missing, third-party authenticator apps are turned off in the tenant: an admin
   enables "Third-party software OATH tokens" in the Authentication methods policy. The "Hardware
   token" option is only for physical tokens an admin registered.
+
+## An MCP server behind Entra ID
+
+For a remote MCP server that Claude (web, desktop, Code) or another client signs in to with Entra:
+
+- Entra has no dynamic client registration: the client gets the client id and secret of the app
+  registration (Claude: advanced settings of the custom connector; Claude Code: `--client-id`,
+  `--client-secret` and a fixed `--callback-port` whose `http://localhost:<port>/callback` is a redirect
+  URI of the app).
+- Claude Code sends the server address `https://<host>/mcp` as OAuth `resource` and only accepts
+  protected resource metadata whose resource matches that address. Entra only issues the token when the
+  resource is an Application ID URI of the app; otherwise the browser shows "Authentication successful"
+  but the token exchange fails with AADSTS9010010 ("The resource parameter provided in the request
+  doesn't match with the requested scopes"). Add `https://<host>/mcp` as Application ID URI and let the
+  server announce the scope `https://<host>/mcp/<scope>`. The MCP log of the client shows the real
+  error (Claude Code: `%LOCALAPPDATA%\claude-cli-nodejs\Cache\<project>\mcp-logs-<server>\`).
+- Who may use the server at all: turn on "Assignment required" on the enterprise application and assign
+  an Entra group to an app role. Once the app has app roles, the default access role can no longer be
+  assigned: create a role such as `User`. Turning it on locks out everyone not in a group yet: add the
+  existing users first, guests from other tenants included. A changed membership needs a new sign-in
+  before the token carries the role.
+- A second app role (for example `KeyUser`) in the `roles` claim lets the server allow certain actions
+  to a group only, checked server side.
+- Queries as the user: exchange the user's token on-behalf-of for a token of the downstream API, so its
+  own permissions and row level security apply. A service principal often cannot query data that has
+  row level security at all.

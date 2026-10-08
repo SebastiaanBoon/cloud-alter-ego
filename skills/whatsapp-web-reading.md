@@ -58,3 +58,21 @@ in Chrome. Read only.
   calendar day regardless of the year. A day that returns four to six years in a row is very
   reliable. The person having the birthday never congratulates themselves, so whoever never appears
   as a sender in that cluster over several years is the one. Cross-check with a known date.
+
+## Pairing, background tabs and polls
+
+- **Pairing when the user is not at the computer:** on the sign-in screen choose "Link with phone
+  number instead", fill in their number (through the value setter plus an `input` event; typing does
+  not arrive when the window is not in front), press Next and give them the 8-character code from
+  `document.body.innerText`. They enter it on the phone under Linked devices, Link with phone number.
+- **Background tab:** when another tab is in front the browser pauses rendering. Screenshots, `find`
+  and `await setTimeout` then hang, and animated panels (such as poll details) do not open. Use only
+  synchronous script calls without timers.
+- **Close the "What's new" screen first:** after a new pairing a Continue dialog covers the page and
+  blocks clicks.
+- **Who did (not) vote in a poll:** read it from the data, not the screen. IndexedDB `model-storage`:
+  `group-metadata` (subject to group id), `participant` (members per group), `poll-votes` (per vote
+  `parentMsgKey`, `sender`, encrypted choice) and `contact` (member id to name and number). The choices
+  themselves are decrypted in `window.require('WAWebCollections').PollVote`: an empty list means the
+  vote was withdrawn and counts as not voted. Check the count against "X of Y members voted".
+- A pasted `@Name` is plain text. A real mention needs typing @ in WhatsApp and picking the name.
