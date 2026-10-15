@@ -1,13 +1,15 @@
 """
 SessionEnd hook: saves a Claude Code transcript in the folder of the active context.
 
-Reads the hook payload (JSON) from stdin, finds the active context in .current-context, and
+Reads the hook payload (JSON) from stdin, finds the context of this session (.current-context.d/<session_id>, else the device
+default .current-context), and
 writes the raw .jsonl plus a readable .md to <clients|projects>/<slug>/sessions/. Then commits
 everything that changed in the repo, pulls with rebase (other devices push too) and pushes.
 
 Manual use: python tools/save_session.py <transcript_path> [context-slug]
 """
 import datetime
+import glob
 import json
 import os
 import shutil
@@ -18,6 +20,7 @@ BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(BASE, "tools"))
 import note  # noqa: E402
 
+MAX_JSONL_BYTES = 50 * 1024 * 1024
 NO_WINDOW = 0x08000000 if os.name == "nt" else 0
 
 
@@ -39,7 +42,7 @@ def active_context(payload):
     override = payload.get("context_override")
     if override and note.context_dir(override):
         return override
-    return note.current_context()
+    return note.current_context(payload.get("session_id"))
 
 
 def block_text(content):
@@ -105,7 +108,12 @@ def main():
 
     dest_dir = os.path.join(note.context_dir(slug) or note.context_dir(note.FALLBACK), "sessions")
     os.makedirs(dest_dir, exist_ok=True)
-    shutil.copyfile(tp, os.path.join(dest_dir, base_name + ".jsonl"))
+    # A transcript only grows, so the newest save of a session contains every earlier one.
+    for old in glob.glob(os.path.join(dest_dir, "*-" + session_id[:8] + ".*")):
+        os.remove(old)
+    # GitHub rejects files over 100 MB; one such file would block every later push.
+    if os.path.getsize(tp) <= MAX_JSONL_BYTES:
+        shutil.copyfile(tp, os.path.join(dest_dir, base_name + ".jsonl"))
     try:
         with open(os.path.join(dest_dir, base_name + ".md"), "w", encoding="utf-8", newline="\n") as f:
             f.write(jsonl_to_md(tp))

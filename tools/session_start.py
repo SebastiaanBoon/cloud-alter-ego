@@ -154,19 +154,36 @@ def ensure_setup(create_default=False):
     return changed
 
 
+def read_hook():
+    try:
+        if sys.stdin is None or sys.stdin.isatty():
+            return {}
+        raw = sys.stdin.read()
+        return json.loads(raw) if raw.strip() else {}
+    except Exception:
+        return {}
+
+
 def main():
+    hook = read_hook()
+    session = hook.get("session_id") or ""
     pull_latest()
     try:
         ensure_setup()
     except Exception:
         pass
-    slug = note.current_context()
+    slug, source = note.current_context(session, with_source=True)
+    if source == "session":
+        target_line = "Context of this session (" + session[:8] + ", .current-context.d): " + slug + "."
+    else:
+        target_line = ("This session (" + (session[:8] or "id unknown") + ") has no context of its own yet; until you set it, "
+                       "everything goes to the device default .current-context: " + slug + " (it may belong to another session).")
     note_cmd = PY_EXE + " " + os.path.join(BASE, "tools", "note.py")
     lines = [
         "cloud-alter-ego (your shared memory: context, working rules, clients and projects) lives in " + BASE + ".",
-        "Active context according to .current-context: " + slug + ".",
+        target_line,
         "For client or project work, first read its README.md and the newest file in its journal/ folder.",
-        "Set the context as soon as it is known: " + note_cmd + " --set <slug> (see --list, create with --new-client or --new-project).",
+        "Set the context as soon as it is known: " + note_cmd + " --set <slug>, for this session only (note.py reads CLAUDE_CODE_SESSION_ID; without it add --session " + (session or "<session id>") + "). See --list, create with --new-client or --new-project.",
         "Every question and answer is logged to the journal automatically and pushed right away (tools/auto_journal.py). "
         "On top of that, write 1 meaningful line per turn with " + note_cmd + " \"<what happened and what came out of it>\": "
         "the automatic lines are truncated, your line is the summary another AI needs later.",
