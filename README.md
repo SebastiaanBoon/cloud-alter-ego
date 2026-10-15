@@ -48,15 +48,16 @@ another device    ──> git pull on start     ──> same memory everywhere
 | [personal.md](personal.md) | Optional personal context (template) |
 | [clients/](clients/README.md) | One folder per client: README with stack and incident history, `journal/`, `sessions/` |
 | [projects/](projects/README.md) | One folder per own project, plus the infrastructure they share |
-| [skills/](skills/README.md) | Runbooks: resume Remote Control sessions, read WhatsApp Web, client presentations, repo check-up, lead outreach |
-| [techniques/](techniques/README.md) | Reusable technical knowledge: Fabric, fabric-cicd, dbt, Databricks, Azure, Entra ID, Microsoft 365 groups, Power BI, Git |
+| [skills/](skills/README.md) | Runbooks: resume Remote Control sessions, scheduled routines that learn from every run, client messages and presentations, DevOps board updates, read WhatsApp Web, repo check-up, lead outreach |
+| [techniques/](techniques/README.md) | Reusable technical knowledge: Fabric, fabric-cicd, dbt, Databricks, Azure, Entra ID, Microsoft 365 groups, Power BI, Git, agent sessions on a Linux server |
 | [WORKFLOW.md](WORKFLOW.md) | How the hooks, contexts and syncing work |
-| [tools/](tools/) | The scripts behind it all |
+| [tools/](tools/) | The scripts behind it all, a routine runner (`run_routine.sh`, `run_routine.ps1`) and a Linux server kit (`tools/server/`) |
 | [CHANGELOG.md](CHANGELOG.md) | What changed per release |
 
 ## Daily use
 
 - Tell the agent what you are working on, or set it yourself: `python tools/note.py --set acme`.
+  The context is per session, so parallel sessions each log to their own journal.
   The agent reads that client's README and newest journal before it starts.
 - The agent writes one meaningful journal line per turn. The automatic lines from the hooks are a
   safety net, the agent's line is the summary a future session needs.
@@ -68,7 +69,7 @@ another device    ──> git pull on start     ──> same memory everywhere
 - Your copy must be **private**: transcripts and journals are pushed automatically. The installer
   warns when your remote is public.
 - Never store secrets here. Resource names are fine, keys and passwords are not.
-- `.current-context`, `.auto-journal/` and `tools/sessions.json` are local and gitignored.
+- `.current-context`, `.current-context.d/`, `.auto-journal/` and `tools/sessions.json` are local and gitignored.
 - The hooks never fail hard: errors go to `.auto-journal/errors.log` and a session never gets stuck.
 - Journals use a union merge (`.gitattributes`), so parallel sessions never block each other on a
   journal conflict.
@@ -77,7 +78,8 @@ another device    ──> git pull on start     ──> same memory everywhere
 
 - Claude Code (any plan that supports hooks), optionally Codex.
 - Python 3.8 or newer, git, and a private Git remote.
-- Windows, macOS or Linux. `tools/start_agents.ps1` is Windows only.
+- Windows, macOS or Linux. `tools/start_agents.ps1`, `watch_sessions.ps1` and `type_into_session.ps1` are
+  Windows only, `tools/server/` is Linux with systemd.
 
 ## License
 
