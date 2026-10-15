@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+"""Prints 'midtask' when a Claude Code transcript stopped halfway through a task, otherwise 'idle'.
+
+Mid-task: the last real message is a tool call or tool result, a user prompt without an answer, or the turn
+ended while a background command was still running (that command is gone after a crash).
+Idle: the last real message is a final answer, an interrupt, or there are no messages.
+Meta entries (local commands, system notes, sidechains) are ignored.
+"""
+import json
+import re
+import sys
+
+
+def text_of(content):
+    if isinstance(content, str):
+        return content
+    return " ".join(x.get("text", "") for x in content if isinstance(x, dict) and x.get("type") == "text")
+
+
+BG_START = re.compile(r"running in background with ID: (\w+)|Running in the background", re.I)
+BG_DONE = re.compile(r"<task-id>(\w+)</task-id>")
+
+
+def result_text(blocks):
+    out = []
+    for b in blocks:
+        if isinstance(b, dict) and b.get("type") == "tool_result":
+            c = b.get("content")
+            out.append(c if isinstance(c, str) else text_of(c or []))
+    return " ".join(out)
+
+
+def main(path):
+    last = None
+    background = set()  # background commands started but not reported back: lost after a crash
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            try:
+                e = json.loads(line)
+            except ValueError:
+                continue
+            if e.get("type") not in ("user", "assistant") or e.get("isMeta") or e.get("isSidechain"):
+                continue
+            content = (e.get("message") or {}).get("content", "")
+            txt = text_of(content).lstrip()
+            if e["type"] == "user":
+                blocks = content if isinstance(content, list) else []
+                for m in BG_START.finditer(result_text(blocks)):
+                    background.add(m.group(1) or "unknown")
+                raw = content if isinstance(content, str) else txt
+                if "<task-notification>" in raw:
+                    done = BG_DONE.findall(raw)
+                    background.difference_update(done or list(background))
+                    background.discard("unknown")
+                    continue
+                if txt.startswith(("<command-", "<local-command", "<system-reminder")):
+                    continue
+                if isinstance(content, str) or not any(isinstance(b, dict) and b.get("type") == "tool_result" for b in blocks):
+                    background.clear()  # a new prompt from a person starts a new task
+            last = e
+    if not last:
+        return "idle"
+    if background:
+        return "midtask"
+    msg = last.get("message") or {}
+    content = msg.get("content", "")
+    blocks = content if isinstance(content, list) else []
+    if last["type"] == "assistant":
+        if any(isinstance(b, dict) and b.get("type") == "tool_use" for b in blocks) or msg.get("stop_reason") == "tool_use":
+            return "midtask"
+        return "idle"
+    # user
+    if any(isinstance(b, dict) and b.get("type") == "tool_result" for b in blocks):
+        return "midtask"
+    if "[Request interrupted by user" in text_of(content):
+        return "idle"
+    return "midtask"
+
+
+if __name__ == "__main__":
+    try:
+        print(main(sys.argv[1]))
+    except Exception:
+        print("idle")

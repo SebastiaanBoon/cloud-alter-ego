@@ -1,0 +1,4 @@
+Run the routine "example". Open skills/routines.md and follow it: read skills/learnings/example.md first, then
+do the task below, then append your lesson and push only that file.
+
+Task: summarise yesterday's commits in this repo in five lines and write them to the journal.

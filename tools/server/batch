@@ -1,0 +1,7 @@
+#!/bin/bash
+# Runs a heavy job throttled in batch.slice (max 1 core, 1.5 GB, nice 19, idle IO). Never start heavy jobs plain.
+#   batch <cmd> [args]                    in the foreground, output to the terminal, waits for the end
+#   batch --service <name> <cmd> [args]   in the background as unit batch-<name>, restarts after a crash or OOM;
+#                                         follow with: journalctl -u batch-<name> -f
+[ $# -gt 0 ] || { sed -n '2,6p' "$0"; exit 2; }
+exec sudo -n /usr/local/sbin/batch-run "$PWD" "$@"

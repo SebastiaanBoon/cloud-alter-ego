@@ -1,0 +1,11 @@
+#!/bin/bash
+# Makes sure every configured session unit is enabled and running. Idempotent; used by the 5-minute timer.
+for conf in /etc/claude-sessions/*.conf; do
+  inst=$(basename "$conf" .conf)
+  unit="claude-session@$inst.service"
+  systemctl is-enabled -q "$unit" || systemctl enable -q "$unit"
+  if ! systemctl is-active -q "$unit"; then
+    systemctl reset-failed "$unit" 2>/dev/null
+    systemctl start "$unit" && logger -t claude-sessions "started $unit"
+  fi
+done

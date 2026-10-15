@@ -1,0 +1,10 @@
+[Unit]
+Description=Pause batch jobs and lower helper priority when the load climbs
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=1min
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target

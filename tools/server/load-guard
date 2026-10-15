@@ -1,0 +1,20 @@
+#!/bin/bash
+# Every minute: above load 3 (2 cores) batch.slice is frozen and helper processes of the agent user (browsers,
+# python, node) get nice 19; below load 2 batch.slice runs again. Claude itself, tmux and sshd are left alone.
+# Scale the thresholds to your core count.
+U=__AGENT_USER__
+LOAD=$(cut -d' ' -f1 /proc/loadavg)
+FREEZE=/sys/fs/cgroup/batch.slice/cgroup.freeze
+frozen() { [ -f "$FREEZE" ] && [ "$(cat "$FREEZE")" = 1 ]; }
+if awk -v l="$LOAD" 'BEGIN{exit !(l>3)}'; then
+  n=0
+  for pid in $(pgrep -u "$U"); do
+    case "$(cat "/proc/$pid/comm" 2>/dev/null)" in claude|tmux*|sshd|bash|"") continue ;; esac
+    [ "$(ps -o ni= -p "$pid" | tr -d ' ')" = 19 ] && continue
+    renice -n 19 -p "$pid" >/dev/null 2>&1 && n=$((n+1))
+  done
+  [ "$n" -gt 0 ] && logger -t load-guard "load $LOAD > 3: $n helper processes to nice 19"
+  if [ -f "$FREEZE" ] && ! frozen; then echo 1 > "$FREEZE"; logger -t load-guard "load $LOAD > 3: batch.slice paused"; fi
+elif awk -v l="$LOAD" 'BEGIN{exit !(l<2)}' && frozen; then
+  echo 0 > "$FREEZE"; logger -t load-guard "load $LOAD < 2: batch.slice resumed"
+fi

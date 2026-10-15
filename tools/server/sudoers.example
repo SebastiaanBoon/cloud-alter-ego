@@ -1,0 +1,5 @@
+# The agent user may start throttled batch jobs and restart its own session units, nothing else as root.
+# install.sh replaces __AGENT_USER__ with the user name you pass it.
+__AGENT_USER__ ALL=(root) NOPASSWD: /usr/local/sbin/batch-run *
+__AGENT_USER__ ALL=(root) NOPASSWD: /usr/bin/systemctl restart claude-session@*.service
+__AGENT_USER__ ALL=(root) NOPASSWD: /usr/local/lib/claude-sessions/ensure-sessions

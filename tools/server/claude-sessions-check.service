@@ -1,0 +1,6 @@
+[Unit]
+Description=Start missing Claude session units
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/claude-sessions/ensure-sessions
