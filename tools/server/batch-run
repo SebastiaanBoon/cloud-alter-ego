@@ -1,0 +1,17 @@
+#!/bin/bash
+# Root helper behind /usr/local/bin/batch (sudoers allows only this script). Always runs the job as the agent user.
+set -u
+U=__AGENT_USER__
+CWD="$1"; shift
+[ -d "$CWD" ] || CWD="/home/$U"
+COMMON=(--uid="$U" --gid="$U" --slice=batch.slice --working-directory="$CWD" --collect
+  -E HOME="/home/$U" -E PATH="/home/$U/.local/bin:/usr/local/bin:/usr/bin:/bin" -E PYTHONUNBUFFERED=1
+  -p Nice=19 -p IOSchedulingClass=idle -p CPUWeight=20 -p MemoryHigh=1300M -p MemoryMax=1500M)
+if [ "${1:-}" = --service ]; then
+  NAME="${2:?name}"; shift 2
+  [[ "$NAME" =~ ^[A-Za-z0-9_.-]+$ ]] || { echo "invalid name"; exit 2; }
+  exec systemd-run "${COMMON[@]}" --unit="batch-$NAME" -p Restart=on-failure -p RestartSec=120 \
+    -p StartLimitIntervalSec=0 -- "$@"
+fi
+# The "--" stops option parsing: a job can never pass its own systemd-run options (such as another --uid).
+exec systemd-run "${COMMON[@]}" --wait --pipe --quiet -- "$@"

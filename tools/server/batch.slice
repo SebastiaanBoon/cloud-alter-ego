@@ -1,0 +1,10 @@
+[Unit]
+Description=Throttled heavy jobs; start them with /usr/local/bin/batch
+
+[Slice]
+# At most one core, lowest priority, and never more than 1.5 GB so the sessions keep running.
+CPUQuota=100%
+CPUWeight=20
+IOWeight=10
+MemoryHigh=1300M
+MemoryMax=1500M

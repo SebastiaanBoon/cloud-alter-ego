@@ -17,3 +17,4 @@ docs before relying on a fact, platforms change.
 | [power-bi.md](power-bi.md) | Semantic models, DAX patterns, refresh automation |
 | [microsoft-365-groups-and-guests.md](microsoft-365-groups-and-guests.md) | Member groups with guest users: device-code sign-in, invites, dead addresses, archive group |
 | [git.md](git.md) | Commit and push hygiene when agents do the committing |
+| [linux-server-sessions.md](linux-server-sessions.md) | Claude sessions on a small VPS: a systemd unit per session, `batch` throttling, load guard, memory pitfalls |

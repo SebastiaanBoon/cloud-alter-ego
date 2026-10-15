@@ -1,0 +1,25 @@
+[Unit]
+Description=Claude Remote Control session %i
+After=network-online.target
+Wants=network-online.target
+# Never give up: a crash, OOM or reboot is only a temporary glitch.
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=__AGENT_USER__
+Slice=claude.slice
+# One tmux server per session (tmux -L cs-%i), so every session lives in its own cgroup with its own limits.
+ExecStart=/usr/local/lib/claude-sessions/run-session %i
+ExecStop=/usr/bin/tmux -L cs-%i kill-server
+KillMode=control-group
+Restart=always
+RestartSec=15
+# Exit 3 = no transcript for this id: never start a new session in its place.
+RestartPreventExitStatus=3
+MemoryHigh=900M
+MemoryMax=1300M
+OOMScoreAdjust=200
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,55 @@
+#!/bin/bash
+# Runs one Claude Remote Control session on its original session id, for claude-session@<name>.service.
+# Config: /etc/claude-sessions/<name>.conf with ID, NAME (Remote Control name), CWD and optional MODEL.
+# On start it checks the transcript: was the session halfway through a task, it gets a continue prompt.
+set -u
+INST="$1"
+CONF="/etc/claude-sessions/$INST.conf"
+[ -f "$CONF" ] || { echo "no config $CONF"; exit 3; }
+# shellcheck disable=SC1090
+. "$CONF"
+U=__AGENT_USER__
+export HOME="/home/$U" PATH="/home/$U/.local/bin:/usr/local/bin:/usr/bin:/bin" TERM=xterm-256color
+SOCK="cs-$INST"
+T="$HOME/.claude/projects/$(echo "$CWD" | sed 's/[^A-Za-z0-9]/-/g')/$ID.jsonl"
+[ -f "$T" ] || { echo "no transcript $T: not starting a new session in its place"; exit 3; }
+
+# One process per id: a leftover outside this unit (old tmux, manual start) is stopped first.
+for pid in $(pgrep -u "$U" -f -- "--resume $ID"); do
+  grep -q "claude-session@$INST" "/proc/$pid/cgroup" 2>/dev/null && continue
+  echo "stopping leftover process $pid on $ID"; kill "$pid"
+done
+tmux -L "$SOCK" kill-server 2>/dev/null
+
+mkdir -p "$CWD"
+jq --arg p "$CWD" '.projects[$p].hasTrustDialogAccepted=true' "$HOME/.claude.json" > "$HOME/.claude.json.tmp.$$" \
+  && mv "$HOME/.claude.json.tmp.$$" "$HOME/.claude.json"
+
+STATE=$(python3 /usr/local/lib/claude-sessions/session-state "$T")
+PROMPT=
+if [ "$STATE" = midtask ]; then
+  PROMPT="You were restarted after an outage (crash, out of memory or server restart). Read back your last steps in this conversation and continue where you were. If you were already done, do nothing."
+  echo "session was mid-task: sending continue prompt"
+fi
+
+ARGS=(--dangerously-skip-permissions --resume "$ID" --remote-control "$NAME")
+[ -n "${MODEL:-}" ] && ARGS=(--model "$MODEL" "${ARGS[@]}")
+printf -v CMD '%q ' claude "${ARGS[@]}"
+tmux -L "$SOCK" new-session -d -s "$INST" -x 200 -y 50 -c "$CWD" "$CMD"
+
+if [ -n "$PROMPT" ]; then
+  # Wait until the input box is ready, then type the prompt like a person would.
+  for _ in $(seq 1 60); do
+    sleep 3
+    tmux -L "$SOCK" capture-pane -p -t "$INST" 2>/dev/null | grep -qiE 'bypass permissions|remote control|for shortcuts' && break
+  done
+  sleep 5
+  tmux -L "$SOCK" send-keys -t "$INST" -l "$PROMPT"
+  sleep 1
+  tmux -L "$SOCK" send-keys -t "$INST" Enter
+fi
+
+# Stay alive as long as the session runs; when Claude exits, systemd restarts this unit.
+while tmux -L "$SOCK" has-session -t "$INST" 2>/dev/null; do sleep 15; done
+echo "session $INST ended"
+exit 1

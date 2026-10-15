@@ -1,0 +1,6 @@
+[Unit]
+Description=Load guard for batch.slice
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/load-guard

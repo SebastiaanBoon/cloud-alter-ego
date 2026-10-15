@@ -1,0 +1,10 @@
+[Unit]
+Description=Check the Claude session units every 5 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+Unit=claude-sessions-check.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,9 @@
+[Unit]
+Description=Claude Remote Control sessions
+
+[Slice]
+# Below system services (sshd, weight 100) so the box stays reachable, above batch jobs (20).
+# Sized for a 2 vCPU / 4 GB server; scale the limits to your machine.
+CPUWeight=60
+IOWeight=60
+MemoryHigh=2800M
