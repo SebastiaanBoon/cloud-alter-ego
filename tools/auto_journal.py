@@ -77,6 +77,22 @@ def texts(content, kind):
     return out
 
 
+SYSTEM_MARKERS = ("<task-notification", "<cross-session-message", "[SYSTEM NOTIFICATION", "<local-command-")
+
+
+def prompt_text(e):
+    """Text of a real question, or "". A message sent during a running turn is stored as an
+    attachment of type queued_command in the transcript; task notifications, messages from other
+    sessions and local command output are not questions."""
+    if e.get("type") == "attachment":
+        a = e.get("attachment") or {}
+        return a.get("prompt") or "" if a.get("type") == "queued_command" else ""
+    if e.get("type") != "user" or e.get("isMeta"):
+        return ""
+    t = " ".join(texts(e.get("message", {}).get("content"), "user"))
+    return "" if any(m in t for m in SYSTEM_MARKERS) else t
+
+
 def from_claude(hook):
     path = hook.get("transcript_path")
     if not path or not os.path.exists(path):
@@ -93,15 +109,12 @@ def from_claude(hook):
         entries.append(e)
     prompt_idx = None
     for i in range(len(entries) - 1, -1, -1):
-        e = entries[i]
-        if e.get("type") != "user" or e.get("isMeta"):
-            continue
-        if clean(" ".join(texts(e.get("message", {}).get("content"), "user")), 400):
+        if clean(prompt_text(entries[i]), 400):
             prompt_idx = i
             break
     if prompt_idx is None:
         return None
-    prompt = " ".join(texts(entries[prompt_idx]["message"]["content"], "user"))
+    prompt = prompt_text(entries[prompt_idx])
     answer = []
     for e in entries[prompt_idx + 1:]:
         if e.get("type") == "assistant":
@@ -129,12 +142,12 @@ def prompt_state(session_id):
 def on_prompt(hook):
     """UserPromptSubmit: log the question right away, independent of the transcript."""
     prompt = hook.get("prompt") or ""
-    if not clean(prompt, 180):
+    if not clean(prompt, 180) or any(m in prompt for m in SYSTEM_MARKERS):
         return
     os.makedirs(STATE, exist_ok=True)
     with open(prompt_state(hook.get("session_id")), "w", encoding="utf-8") as f:
         f.write(prompt)
-    write("claude " + (session_name(hook) or ""), prompt, "")
+    write("claude " + (session_name(hook) or ""), prompt, "", hook.get("session_id"))
     maybe_start_sync()
 
 
@@ -151,11 +164,11 @@ def on_stop(hook):
     who, prompt, answer = result
     if asked and clean(asked, 180) != clean(prompt, 180):
         with contextlib.redirect_stdout(io.StringIO()):
-            note.append(note.current_context(), "[auto " + who + "] WARNING: the transcript of this session is not "
+            note.append(note.current_context(hook.get("session_id")), "[auto " + who + "] WARNING: the transcript of this session is not "
                         "being written (the last question is missing). Probably two processes run on the same "
                         "session. See skills/remote-control-sessions.md.")
         return
-    write(who, "(answer)", answer)
+    write(who, "(answer)", answer, hook.get("session_id"))
     maybe_start_sync()
 
 
@@ -165,11 +178,13 @@ def from_codex(payload):
     inputs = payload.get("input-messages") or payload.get("input_messages") or []
     prompt = inputs[-1] if inputs else ""
     answer = payload.get("last-assistant-message") or payload.get("last_assistant_message") or ""
-    thread = str(payload.get("thread-id") or payload.get("turn-id") or "")[:8]
-    return "codex " + thread, prompt, answer
+    thread_id = str(payload.get("thread-id") or payload.get("thread_id") or "")
+    thread = (thread_id or str(payload.get("turn-id") or ""))[:8]
+    return "codex " + thread, prompt, answer, thread_id or None
 
 
-def write(who, prompt, answer):
+def write(who, prompt, answer, session=None):
+    """session: session id from the hook, for the context of that session (see note.py)."""
     p = clean(prompt, 180)
     if not p:
         return
@@ -183,7 +198,7 @@ def write(who, prompt, answer):
     with open(LAST_LINE, "w", encoding="utf-8") as f:
         f.write(line)
     with contextlib.redirect_stdout(io.StringIO()):
-        note.append(note.current_context(), line)
+        note.append(note.current_context(session), line)
 
 
 def maybe_start_sync():

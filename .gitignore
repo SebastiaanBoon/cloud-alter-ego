@@ -3,3 +3,4 @@
 __pycache__/
 tools/sessions.json
 raw-export/
+.current-context.d/

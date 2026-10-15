@@ -1,5 +1,5 @@
-# Resumes your named Remote Control sessions, each in its own PowerShell window, on their original
-# session id. See skills/remote-control-sessions.md for the why and the checks.
+# Resumes your named Remote Control sessions, each in its own hidden PowerShell window, on their
+# original session id. See skills/remote-control-sessions.md for the why and the checks.
 #
 # Put your sessions in tools/sessions.json (copy tools/sessions.example.json; it is gitignored
 # because session ids are per machine).
@@ -30,6 +30,6 @@ foreach ($s in $sessions) {
     if ($s.skipPermissions) { $flags = @('--dangerously-skip-permissions') + $flags }
     $cmd = "Set-Location '$($s.cwd)'; & '$claude' " + ($flags -join ' ')
     $enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($cmd))
-    Start-Process powershell -WorkingDirectory $s.cwd -ArgumentList '-NoExit', '-EncodedCommand', $enc
+    Start-Process powershell -WindowStyle Hidden -WorkingDirectory $s.cwd -ArgumentList '-NoExit', '-EncodedCommand', $enc
     Write-Host "Started $($s.name) ($($s.id))"
 }

@@ -30,13 +30,16 @@ Codex has no session-start hook. `install.py` therefore:
 
 ## Contexts
 
-A context is a folder in `clients/` or `projects/`. The active one lives in `.current-context` (local,
-gitignored). Without one, everything lands in `clients/_unsorted/`.
+A context is a folder in `clients/` or `projects/`. The active one is set per session in
+`.current-context.d/<session id>`, so parallel sessions each keep their own. `.current-context` is the
+device default for sessions that did not set one (both local and gitignored). Without either, everything
+lands in `clients/_unsorted/`. The session id comes from `CLAUDE_CODE_SESSION_ID` or `--session <id>`.
 
 ```
 python tools/note.py --new-client acme        # create from the template and make it active
 python tools/note.py --new-project my-app
-python tools/note.py --set acme               # switch
+python tools/note.py --set acme               # switch, for this session
+python tools/note.py --set acme --global      # device default
 python tools/note.py --list
 python tools/note.py "Pipeline failed on a missing config column, fixed by X"
 ```
