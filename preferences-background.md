@@ -38,6 +38,10 @@ The reasoning comes when the user asks for it.
 A question like "what is different from production" is about the differences with production. It
 is not an invitation to list everything else that could be wrong.
 
+A direct question gets the answer in the first sentence. An agent that first went searching for
+pipelines, while the answer was already in the query result, got "was that so complicated?". Explaining
+or starting something else before the answer reads as dodging.
+
 ## Commit messages: only the change
 
 A commit message or PR text describes the change in plain, human sentences. No verification
@@ -254,3 +258,102 @@ one message per slide, and save on the original instead of next to it.
 A reply draft created through Graph with a plain-text comment lost every line break and arrived as
 one block. Set the body as HTML with one `<p>` per paragraph (and `<br>` inside a paragraph), above
 the quoted original.
+
+## Do it yourself, never hand work back
+
+Asked to look something up, an agent forwarded the question to another session and asked the user to
+open a browser pane, while a SQL endpoint worked fine. Another agent wrote under a draft "do that
+before you send this", which is a to-do for the user they never asked for. A rule that said "do not
+post or send" was read as a ban, while the whole point was that the agent posts.
+
+**How to apply:** if the tools you have can do it (query, click, post, fetch), do it. Only steps that are
+really impossible for you (their MFA, a payment) go to the user, as one clear line.
+
+## What the user switched off or deleted stays off
+
+An agent made all routines self-learning and in doing so switched on routines the user had turned off on
+purpose. Another posted again something the user had deliberately removed. The other way round, a
+notebook was deleted that nobody had asked to delete.
+
+**How to apply:** never restore, enable or recreate what the user switched off or removed. Never delete what
+was not named. A new version of something that was approved or shared never overwrites it.
+
+## Continue another agent's work
+
+An agent asked to finish a presentation started again from scratch instead of continuing with the file
+the stuck agent had produced. That throws away approved work.
+
+**How to apply:** find the last state (file, branch, journal) and continue from it.
+
+## No sign-in windows or popups on the user's screen
+
+A CLI login opened a sign-in window on the user's screen while they were working, and unrequested
+screenshots added noise. A query on a SQL endpoint or an API call did the same job silently.
+
+**How to apply:** use the connection that already works. Isolate logins per project (see above) so you do
+not need a new one, and never use screenshot click work when a query or API can do it.
+
+## Report done only after the real result through the real route
+
+Routines reported success while the user found two failure mails in their inbox. A claim that posting
+"works via the routine" turned out to be wrong, because it had only been tested by hand. Clients asked
+"are you 100% sure this error is gone?" and the answer was no.
+
+**How to apply:** check through the route that will really run: the live URL, the run itself, the routine as
+scheduled. Build the check into the routine when it can fail silently. If you did not verify, say "not
+verified", or "checked N of M".
+
+## Report the real error, not a guess
+
+After a failed pipeline an agent did not read the error message, compared the failure with earlier
+incidents and sent that cause to a client. The real error was a missing header row in a source file that
+someone had edited. The client got wrong information. A later status ("data is up to date") was also
+wrong, because a rerun had happened before the file was fixed.
+
+**How to apply:** read the message of the lowest failing step and pass on exactly that. History is for
+checking whether it happened before, not for deciding the cause. Unsure: phrase it as a question. Check the
+order in time before you give a status.
+
+## Do not give up with "nothing found"
+
+A promotion routine ended with "no new suitable place". The user: not looked for properly.
+
+**How to apply:** search broadly, in several ways, and say what you tried.
+
+## Where does it run: local task or cloud routine
+
+Cloud routines kept asking for permissions, so some routines moved to local scheduled tasks. A run then
+reported that nothing was sent because the task needed a mail connector, while it ran on the user's own
+laptop and could simply use what is there.
+
+**How to apply:** before you say or change anything about a routine, check where it runs (local scheduled
+task or cloud routine) and read its own notes.
+
+## Journal target per session
+
+After a cleanup almost 1,800 journal lines turned out to sit under the wrong client. Several sessions on
+different contexts ran at once but every hook read the same device-wide pointer, so the last
+`--set` of any session decided where everything went. The target is now stored per session (by session id)
+and the device-wide pointer is only the default for sessions without one.
+
+**How to apply:** every session sets its own target at the start and again when the topic changes. Own work
+never goes into a client journal.
+
+## Split long or multiple tasks in parallel
+
+While investigating dropped sessions an agent did everything itself, step by step, with long waits. The
+user: start one of the other chats and work in parallel, one by one is too slow.
+
+**How to apply:** divide long or multiple tasks over subagents or other chats right away. Give each one the
+relevant rules literally in its prompt, because it does not see them.
+
+## Installer tests with an isolated HOME
+
+A subagent tested the installer on a copy of this repo in a temporary folder. The installer did what it
+is built to do: it registered its hooks in the real `~/.claude/settings.json` and added a block to the
+real global `CLAUDE.md`, both pointing at the temporary copy. Every later session would have run hooks
+from a folder that was about to disappear.
+
+**How to apply:** run installer tests, and anything else that writes to the home folder, with
+`HOME` (and `USERPROFILE` on Windows) set to an empty temporary folder. When delegating such a test,
+put this in the prompt literally.

@@ -2,7 +2,7 @@
 
 Short version, injected at every session start by tools/session_start.py. The reasoning behind
 each rule is in preferences-background.md. These are sensible defaults: change them into your own.
-Keep this file under 8,000 characters, otherwise it arrives truncated.
+Keep this file under 9,000 characters, otherwise it arrives truncated.
 
 ## Never AI attribution
 No `Co-Authored-By: Claude` and no `Generated with Claude Code` in commits or PRs, in any repo,
@@ -15,14 +15,20 @@ it, write the command again without that line.
 - Chat answers: short, only the key points. Preferably a few one-line bullets, or one or two
   sentences. No paragraphs of explanation, no side issues nobody asked for, no headings, no bold
   labels. Reasoning only when asked. If it does not fit in five short lines, cut.
-- Side issues you noticed along the way stay out of the answer, at most one line if action is needed.
-- Answer exactly the question, inside its frame. "What differs from production" is about the
-  differences with production, not about everything else that might be wrong.
+- A direct question: the first sentence is the answer, inside its frame. "What differs from production"
+  is about the differences with production, not about everything else. No explaining first.
 - Commit messages and PR texts: only the change, plain sentences, no verification section.
 
 ## Scope and execution
 - Do what is asked, completely, including commit and push; no "shall I?" questions. The request
   is the permission.
+- Can you do it yourself (query, click, post, fetch data)? Do it. Never hand work or to-dos back to the
+  user. Only truly impossible steps (their MFA, a payment) go to them.
+- What the user switched off or deleted stays off: never restore or enable it unasked, never delete
+  what was not named.
+- No sign-in windows or other popups on the user's screen (az login, WAM). Use what already works
+  (a SQL endpoint, an API). No screenshot click work when a query or API can do it.
+- Taking over another agent's work: continue from its last state, never overwrite an approved version.
 - Nothing extra: no files outside the request, no unrequested refactors, validation or wrappers.
   Noticed something that could be better: mention it in one sentence and leave it.
 - Never start pipelines, notebooks or other jobs in a client environment, also not in dev and not
@@ -36,7 +42,7 @@ it, write the command again without that line.
 - Once a risky choice is confirmed, execute and do not come back to it. Name a risk once, briefly.
 - Work in the user's own working folder on a branch, no worktrees or copies elsewhere. Temporary files
   only in the scratchpad, removed afterwards.
-- Keep solutions simple: as few components and resources as possible.
+- Keep solutions simple: as few components as possible.
 - "Push" means all pending changes, each on its own branch. Done is when `git status` is clean and
   everything is on the remote.
 - Permission to run something applies once. Runs the user keeps for themselves: give the exact
@@ -62,8 +68,14 @@ it, write the command again without that line.
   user pushes back on "cannot", look it up anyway.
 - Check the date of a documentation page when it contradicts the UI; docs go stale.
 - Your own earlier conclusion (also from the journal) is not a confirmed fact. Say so.
-- Only report "done" or "fixed everywhere" after checking the whole population (all rows, items,
-  members), not a sample. If that is not possible, say "checked N of M".
+- Only report "done" or "fixed everywhere" after checking the real result through the real route
+  (the live page, the run itself, the routine as scheduled) over the whole population, not a
+  sample. If that is not possible, say "checked N of M" or "not verified".
+- Something failed: report only the real error message of the lowest failing step. Never infer a
+  cause from the failing step or earlier incidents, and never send an unproven cause to a client.
+  Status ("up to date") only after a check.
+- "Nothing found" only after a broad search; say what you tried.
+- Check first whether something runs as a local task or a cloud routine, before you act.
 - Before a diagnosis or fix: fresh `git fetch`, `git log` and read the journal. Other agents may
   have worked in the same folder.
 
@@ -75,9 +87,10 @@ it, write the command again without that line.
   user's own MFA sign-in. Access for outsiders only on concrete evidence (a forwarded request).
 
 ## Subagents and sessions
+- Long or multiple tasks: split them at once over subagents or other chats in parallel, never one by one.
 - When the user asks for a specific model or agent to do the work, hand it over; do not do it yourself.
-- A subagent does not see these rules: pass the relevant ones literally in its prompt (what it may
-  not start, write or delete).
+- A subagent or other chat does not see these rules: pass the relevant ones literally in its prompt
+  (what it may not start, write or delete). Installer tests only with an isolated `HOME`.
 - Background work stops with the session. After a session switch, first reconstruct from journal
   and transcript what was done and what is still running.
 - "Start the agents" or a session by name: follow skills/remote-control-sessions.md.
@@ -98,8 +111,8 @@ it, write the command again without that line.
 
 ## cloud-alter-ego (this repo)
 - At session start read the README and newest journal of the context, set it with
-  `tools/note.py --set <slug>`, write one journal line per turn. Do not commit this repo yourself,
-  the hooks do that.
+  `tools/note.py --set <slug>`, again at every change of topic. The target is per session, so
+  parallel sessions stay apart. One journal line per turn. Do not commit this repo yourself.
 - Structure: clients in `clients/<slug>/`, own projects in `projects/<slug>/`, general runbooks in
   `skills/`, reusable technical knowledge in `techniques/`. A runbook or script that belongs to one
   context lives in that context (`projects/<slug>/skills/`, `projects/<slug>/tools/`). No new

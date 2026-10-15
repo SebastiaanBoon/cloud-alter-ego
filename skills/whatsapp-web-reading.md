@@ -1,7 +1,8 @@
 # Read WhatsApp through WhatsApp Web
 
-Lets an agent read your WhatsApp messages by driving `web.whatsapp.com` with the Claude extension
-in Chrome. Read only.
+Use this when the user asks to look something up or read in their WhatsApp: a chat or group, who said
+something or filled in a poll, a birthday from congratulations. Route: read along on `web.whatsapp.com`
+with the Claude extension in Chrome. Read only.
 
 ## Why this route
 
@@ -25,6 +26,8 @@ in Chrome. Read only.
    Outgoing messages carry `.message-out`, incoming ones `.message-in`.
 5. On a first sync the bottom shows "Syncing chats" with a counter. Wait until it finishes,
    otherwise the list is still empty.
+6. Answer short with what you found and from which chat. Say so when the history was not complete (only
+   what was loaded, see below).
 
 ## Limits
 
@@ -33,6 +36,7 @@ in Chrome. Read only.
 - This is not a searchable archive. For that you need a local bridge, with the blocking risk above.
   That choice is yours.
 - **Send nothing.** Read only, unless you explicitly ask to send a message.
+- Never put chat content or other people's numbers in this repo or other files.
 
 ## Lessons learned
 
