@@ -12,13 +12,13 @@ import datetime
 import glob
 import json
 import os
-import shutil
 import subprocess
 import sys
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(BASE, "tools"))
 import note  # noqa: E402
+from redact import redact  # noqa: E402
 
 MAX_JSONL_BYTES = 50 * 1024 * 1024
 NO_WINDOW = 0x08000000 if os.name == "nt" else 0
@@ -113,10 +113,14 @@ def main():
         os.remove(old)
     # GitHub rejects files over 100 MB; one such file would block every later push.
     if os.path.getsize(tp) <= MAX_JSONL_BYTES:
-        shutil.copyfile(tp, os.path.join(dest_dir, base_name + ".jsonl"))
+        # Tool outputs end up in the transcript too, so it is masked line by line before it is pushed.
+        with open(tp, encoding="utf-8", errors="replace") as src, \
+                open(os.path.join(dest_dir, base_name + ".jsonl"), "w", encoding="utf-8", newline="\n") as dst:
+            for line in src:
+                dst.write(redact(line))
     try:
         with open(os.path.join(dest_dir, base_name + ".md"), "w", encoding="utf-8", newline="\n") as f:
-            f.write(jsonl_to_md(tp))
+            f.write(redact(jsonl_to_md(tp)))
     except Exception:
         pass
 

@@ -31,6 +31,9 @@ import re
 import shutil
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from redact import redact  # noqa: E402
+
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MARKER = os.path.join(BASE, ".current-context")
 SESSION_DIR = MARKER + ".d"
@@ -159,7 +162,7 @@ def append(slug, text):
             f.write("# Journal " + slug + " " + now.strftime("%Y-%m") + "\n\n")
         if day not in existing:
             f.write("\n" + day + "\n\n")
-        f.write("- " + now.strftime("%H:%M") + " " + text.strip() + "\n")
+        f.write("- " + now.strftime("%H:%M") + " " + redact(text.strip()) + "\n")
     print(path)
     return 0
 

@@ -16,5 +16,6 @@ docs before relying on a fact, platforms change.
 | [entra-id-and-oauth.md](entra-id-and-oauth.md) | Service principals, OAuth flows, secrets, MFA methods, CLI logins |
 | [power-bi.md](power-bi.md) | Semantic models, DAX patterns, refresh automation |
 | [microsoft-365-groups-and-guests.md](microsoft-365-groups-and-guests.md) | Member groups with guest users: device-code sign-in, invites, dead addresses, archive group |
+| [client-environments.md](client-environments.md) | Working rules inside a client environment: runs, drops, item ownership, client CI |
 | [git.md](git.md) | Commit and push hygiene when agents do the committing |
 | [linux-server-sessions.md](linux-server-sessions.md) | Claude sessions on a small VPS: a systemd unit per session, `batch` throttling, load guard, memory pitfalls |
