@@ -4,6 +4,30 @@ All notable changes to this template are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] - 2026-10-29
+
+### Added
+
+- `tools/firefox_profile.py` opens a page or gets a Microsoft token through a copy of a signed-in Firefox
+  profile (one profile per client), without touching the user's own Firefox and without a login.
+- Routines keep one fixed session each, so a routine shows up once in Remote Control. `run_routine.sh`
+  gains `--idle`, `--codex`, secrets from a key vault per routine (`tools/routines/<name>.secrets`) and a
+  hand-off to the systemd unit of `tools/server`, which picks up the prompt and continues after an outage.
+- `run_routine.ps1` runs in a hidden worker that owns the lock for the whole run, schedules a retry just
+  after the reset when Claude or Codex hits its usage limit, and supports `-Codex`.
+  `tools/test_routine_recovery.ps1` checks that logic offline.
+- `start_agents.ps1` starts a session with Claude in Chrome when `chrome` is true in `sessions.json`.
+- `tools/start_chatgpt.ps1` starts the ChatGPT desktop app at logon when it is not running.
+- Skills `devices`, `writing-style`, `pipeline-incident`, `ticket-analysis`, `morning-routine`,
+  `timesheet-proposal`, `ai-usage-indicators`, `stock-analysis` and `loop-page-editing`.
+- `remote-control-sessions`: Claude in Chrome at start and what to do on a git sync warning. `routines`:
+  dispatch from a claude.ai routine to a server, and a routine closes its own session at the end.
+
+### Changed
+
+- Routines run on Sonnet: executing a runbook needs no top model.
+- Routine runners pull with merge instead of rebase.
+
 ## [0.5.0] - 2026-10-29
 
 ### Added
@@ -111,6 +135,7 @@ All notable changes to this template are listed here. The format follows
 - First release: session hooks (auto journal, session save, session start), installer with uninstall,
   attribution block hook, Codex notify chaining, default working rules, skills and techniques.
 
+[0.6.0]: https://github.com/SebastiaanBoon/cloud-alter-ego/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/SebastiaanBoon/cloud-alter-ego/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/SebastiaanBoon/cloud-alter-ego/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/SebastiaanBoon/cloud-alter-ego/compare/v0.2.0...v0.3.0

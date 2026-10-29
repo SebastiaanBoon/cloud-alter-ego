@@ -51,7 +51,7 @@ another device    ──> git pull on start     ──> same memory everywhere
 | [skills/](skills/README.md) | Runbooks: resume Remote Control sessions, scheduled routines that learn from every run, client messages and presentations, DevOps board updates, read WhatsApp Web, repo check-up, lead outreach |
 | [techniques/](techniques/README.md) | Reusable technical knowledge: Fabric, fabric-cicd, dbt, Databricks, Azure, Entra ID, Microsoft 365 groups, Power BI, Git, agent sessions on a Linux server |
 | [WORKFLOW.md](WORKFLOW.md) | How the hooks, contexts and syncing work |
-| [tools/](tools/) | The scripts behind it all, a routine runner (`run_routine.sh`, `run_routine.ps1`) and a Linux server kit (`tools/server/`) |
+| [tools/](tools/) | The scripts behind it all: a routine runner with a fixed session per routine and usage-limit recovery (`run_routine.sh`, `run_routine.ps1`, `test_routine_recovery.ps1`), signed-in browser access through a copy of a Firefox profile (`firefox_profile.py`), token use per session (`token_usage.py`) and a Linux server kit (`tools/server/`) |
 | [CHANGELOG.md](CHANGELOG.md) | What changed per release |
 
 ## Daily use
@@ -78,8 +78,8 @@ another device    ──> git pull on start     ──> same memory everywhere
 
 - Claude Code (any plan that supports hooks), optionally Codex.
 - Python 3.8 or newer, git, and a private Git remote.
-- Windows, macOS or Linux. `tools/start_agents.ps1`, `watch_sessions.ps1` and `type_into_session.ps1` are
-  Windows only, `tools/server/` is Linux with systemd.
+- Windows, macOS or Linux. `tools/start_agents.ps1`, `watch_sessions.ps1`, `type_into_session.ps1`,
+  `start_chatgpt.ps1` and `firefox_profile.py` (by default) are Windows only, `tools/server/` is Linux with systemd.
 
 ## License
 

@@ -2,6 +2,7 @@
 # Runs one Claude Remote Control session on its original session id, for claude-session@<name>.service.
 # Config: /etc/claude-sessions/<name>.conf with ID, NAME (Remote Control name), CWD and optional MODEL.
 # On start it checks the transcript: was the session halfway through a task, it gets a continue prompt.
+# A scheduled routine run (tools/run_routine.sh) leaves its prompt in ~/.local/share/routines/<routine>.pending.
 set -u
 INST="$1"
 CONF="/etc/claude-sessions/$INST.conf"
@@ -27,7 +28,12 @@ jq --arg p "$CWD" '.projects[$p].hasTrustDialogAccepted=true' "$HOME/.claude.jso
 
 STATE=$(python3 /usr/local/lib/claude-sessions/session-state "$T")
 PROMPT=
-if [ "$STATE" = midtask ]; then
+ROUTINE=${INST#routine-}
+PENDING="$HOME/.local/share/routines/$ROUTINE.pending"
+if [ "$ROUTINE" != "$INST" ] && [ -f "$PENDING" ]; then
+  PROMPT=$(cat "$PENDING"); rm -f "$PENDING"
+  echo "starting scheduled routine run on $ID"
+elif [ "$STATE" = midtask ]; then
   PROMPT="You were restarted after an outage (crash, out of memory or server restart). Read back your last steps in this conversation and continue where you were. If you were already done, do nothing."
   echo "session was mid-task: sending continue prompt"
 fi
