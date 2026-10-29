@@ -39,6 +39,8 @@ session with `claude --resume <id> --remote-control "<name>"`.
   Not `--allow-dangerously-skip-permissions`: that only makes it an option, it does not turn it on.
 - Do not put the session that runs the script in sessions.json; it would close itself.
 - Only use an elevated shell when the work in that session needs admin rights.
+- Start sessions with `--chrome` if they have to use Claude in Chrome: without that flag the session has no
+  Claude in Chrome tools. Set `chrome` in sessions.json if your start script supports it, otherwise add the flag.
 
 ## Naming (optional convention)
 
@@ -109,6 +111,19 @@ Do not keep guessing with variants. In this order:
 
 Linux server: one service per session is described in
 [techniques/linux-server-sessions.md](../techniques/linux-server-sessions.md).
+
+## Git sync warning
+
+The journal tool commits and pushes after every question and answer, and the session start script fetches the
+remote. Both merge (no rebase, no autostash) and write the outcome to `.auto-journal/sync-status.json`. When the
+sync stalls, a WARNING about the sync appears at session start and at every question. Then do this first, yourself:
+
+- `git status -sb` and `git stash list`. A stuck `.git/rebase-merge` or `rebase-apply` older than 10 minutes is
+  cleaned up by the sync itself (the autostash goes to the stash list). A hanging merge: resolve the conflict and commit.
+- Look at every autostash (`git stash show -p`), restore what is still missing, then rename it to
+  "checked <date>: ..." (`git stash drop` and `git stash store -m ... <sha>`). Never throw it away.
+- Never stash, reset or overwrite the work of another session in the working folder.
+- Push to the default branch and report back in one sentence.
 
 ## Accidentally made a copy
 

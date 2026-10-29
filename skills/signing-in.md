@@ -13,8 +13,10 @@ works.
    session, or the built-in browser pane if it is already signed in.
 3. **The cloud CLI of the project**, if it already has a valid login (`az account show` with the right
    `AZURE_CONFIG_DIR`). Never start a login yourself.
-4. **A token from an existing browser profile** with single sign-on, if you have a script for it. If it
-   hangs (a timeout, a federation page), stop.
+4. **A token or page from an existing Firefox profile** with single sign-on: keep one profile per client,
+   signed in once, and use `python tools/firefox_profile.py <profile> --token <scope>` or
+   `... <profile> <url> --text`. It works on a copy, so the user's own Firefox stays untouched. If it hangs
+   (a timeout, a federation page), stop.
 5. Still not working: walk `skills/when-it-fails.md` first (an earlier route in the journals, another
    session with a browser or the mail connector). Only then say in one line which login is missing and
    ask for a single sign-in at the place that stays valid afterwards. Do not start windows, browser

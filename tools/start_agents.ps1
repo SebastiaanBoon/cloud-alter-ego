@@ -28,6 +28,8 @@ foreach ($s in $sessions) {
 
     $flags = @('--resume', $s.id, '--remote-control', "'$($s.name)'")
     if ($s.skipPermissions) { $flags = @('--dangerously-skip-permissions') + $flags }
+    # Claude in Chrome on, so the session can use the user's own signed-in browser.
+    if ($s.chrome) { $flags = @('--chrome') + $flags }
     $cmd = "Set-Location '$($s.cwd)'; & '$claude' " + ($flags -join ' ')
     $enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($cmd))
     Start-Process powershell -WindowStyle Hidden -WorkingDirectory $s.cwd -ArgumentList '-NoExit', '-EncodedCommand', $enc
