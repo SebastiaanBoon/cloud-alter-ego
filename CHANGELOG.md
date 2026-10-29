@@ -4,6 +4,25 @@ All notable changes to this template are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.7.0] - 2026-10-29
+
+### Added
+
+- `tools/redact.py` masks tokens (GitHub, Anthropic, OpenAI, Slack, AWS, Google, Entra ID secrets, JWTs, bearer
+  tokens), private keys and `password=`-style values. `note.py` runs every journal line through it and
+  `save_session.py` masks both the saved transcript and its Markdown copy, so a secret in a question, an
+  answer or a tool output no longer reaches Git.
+- `tests/` pins the behaviour of the hooks: masking, the journal format and the attribution block.
+- `techniques/client-environments.md` with the rules for work inside a client environment.
+
+### Changed
+
+- `preferences.md` is about 800 characters shorter, leaving room for your own rules under the 9,000
+  character limit. The client environment rules moved to `techniques/client-environments.md`, with a pointer.
+- README splits the core (hooks, `note.py`, `redact.py`, tests) from the optional parts, says which tools are
+  Windows or Linux only and explains how this repo and the Alter Ego connector work together.
+- `skills/README.md` splits core skills from examples from real work.
+
 ## [0.6.0] - 2026-10-29
 
 ### Added

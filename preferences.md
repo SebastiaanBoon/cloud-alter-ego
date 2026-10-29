@@ -32,31 +32,23 @@ it, write the command again without that line.
 - Taking over another agent's work: continue from its last state, never overwrite an approved version.
 - Nothing extra: no files, refactors, validation or wrappers outside the request. Noticed something
   better: one sentence, then leave it.
-- Never start pipelines, notebooks or jobs in a client environment, also not in dev, unless literally
-  asked to run. After a drop, report what has to be reloaded. No test files there.
-- Before dropping a table: read how the load code creates it (a MERGE fails next run). In doubt, no drop.
 - Destructive in production, new resources or extra cost: align first. Otherwise keep going.
 - Ask before you start, not halfway, and only about resources, cost or direction. Once a risky
   choice is confirmed, execute; name the risk once.
-- Changing an item in a client environment makes your account its owner (it stops when an elevated
-  role expires): report the owner, get approval, then read back owner, status and next run.
 - Work in the user's own folder on a branch, no worktrees. Temporary files only in the scratchpad.
 - Keep solutions simple: as few components as possible.
 - "Push" means all pending changes, each on its own branch. Done is when `git status` is clean and
   everything is on the remote.
 - Permission to run something applies once. Runs the user keeps for themselves: give the exact command.
 - The user is not at the PC: never "do X on the PC", offer a route via their phone.
-- Clients: build and deploy through the client's own CI. Build containers in the pipeline. Git Bash
-  turns `/home/data` in az arguments into a Windows path: set `MSYS_NO_PATHCONV=1`.
 - Agent work stays visible: sessions the user can watch, no headless runs.
 
 ## Code
 - Read the repo first, follow the existing style and patterns.
+- Working in client environments (data platforms, their CI, reports): follow techniques/client-environments.md.
 - Complete, directly pasteable files or cells, no loose snippets.
 - Never invent values: no resource names, IDs, URLs, paths or placeholders. Ask.
 - API data: take all fields from the response, never drop columns.
-- Rebuilding an export or report: list every source field and build all of them; never quietly
-  deliver less. A sync from a tool: only real changes, no formatting noise.
 - No automatic PRs. Deploy to staging or dev by default.
 
 ## Facts and conclusions
@@ -103,7 +95,6 @@ it, write the command again without that line.
 - Documents a manager or client reads: businesslike, balanced, never the reader in the third person.
 - Updating an existing client deck or document: only what is asked, one message per slide, saved on
   the original; locked: wait, no copy.
-- Mail drafts through Microsoft Graph: HTML body, one `<p>` per paragraph.
 
 ## cloud-alter-ego (this repo)
 - At session start read the README and newest journal of the context, set it with
