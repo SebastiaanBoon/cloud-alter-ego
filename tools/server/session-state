@@ -39,6 +39,10 @@ def main(path):
                 e = json.loads(line)
             except ValueError:
                 continue
+            if e.get("type") in ("attachment", "queue-operation"):
+                # A notification that arrives mid-turn is stored as an attachment or queue entry, not as a user message.
+                background.difference_update(BG_DONE.findall(json.dumps(e)))
+                continue
             if e.get("type") not in ("user", "assistant") or e.get("isMeta") or e.get("isSidechain"):
                 continue
             content = (e.get("message") or {}).get("content", "")

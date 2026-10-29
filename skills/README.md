@@ -16,3 +16,7 @@ routines end with a self-learning step: a correction from the user goes into the
 | [client-message-writing](client-message-writing.md) | Any mail or ticket message to a client: template, checklist, keeping the user's voice |
 | [devops-board-update](devops-board-update.md) | Update an Azure DevOps board or backlog with the work that was finished |
 | [routines](routines.md) | Scheduled routines (local, cloud or server cron) that read and append their own lessons in `learnings/` |
+| [when-it-fails](when-it-fails.md) | Before you write "cannot", "not supported" or "you have to": the ladder of routes to walk first |
+| [model-routing](model-routing.md) | Who does what: main session, client chats, Sonnet agents and Haiku bulk work |
+| [token-economy](token-economy.md) | Measure and reduce what sessions, routines and subagents cost of the plan limit |
+| [signing-in](signing-in.md) | The order to try before any login, and what never to do |

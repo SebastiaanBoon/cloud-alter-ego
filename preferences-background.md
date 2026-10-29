@@ -357,3 +357,54 @@ from a folder that was about to disappear.
 **How to apply:** run installer tests, and anything else that writes to the home folder, with
 `HOME` (and `USERPROFILE` on Windows) set to an empty temporary folder. When delegating such a test,
 put this in the prompt literally.
+
+## "Cannot" is almost never true
+
+Several times a task was reported as impossible while an earlier route in the journals, the official API,
+another session with a browser or a mail connector, or simply waiting would have worked. Each time the
+user had to push back and the work was late.
+
+**How to apply:** walk skills/when-it-fails.md completely before you write "cannot". The answer then holds
+the real error and what was tried. A refused login is the exception that runs the other way: stop
+retrying, because every attempt can lock the account.
+
+## Fix the cause, build with the environment
+
+Workarounds (a new item next to a broken one, a custom script next to a standard feature) pile up and
+hide the real fault. Cleaning up without an archive lost history once.
+
+**How to apply:** repair the existing item, branch or endpoint. Read the docs and the standard first.
+When the user wants to deviate from the standard, say why once and then do what they decide. Archive
+before you clean up.
+
+## Changing a client item makes you its owner
+
+An item changed through a personal account becomes owned by that account. When an elevated role expires,
+the item's scheduled runs stop silently.
+
+**How to apply:** report the owner before you change it, get approval, and read back owner, status and
+next run afterwards. Prefer a group as owner.
+
+## Done means saved, merged and synced
+
+A fix was reported as done while the change sat unsaved in a local file, and a silent sync failure went
+unnoticed for days because the warning was buried in a long answer.
+
+**How to apply:** check the real result through the real route. A serious problem you saw goes first in
+the answer. A sync warning at session start is solved before anything else (the sync repairs a stuck
+rebase or merge itself and writes `.auto-journal/sync-status.json`).
+
+## No draft while the investigation runs
+
+A draft to a client or colleague went out while the cause was still unclear, and had to be withdrawn.
+
+**How to apply:** write nothing for a third party until the investigation is finished, even if another
+chat delivered a draft. Findings go in the chat where the user is.
+
+## Cost of long sessions
+
+Resuming a large session after a pause rereads the whole context as a cache write, and a routine with one
+subagent per item multiplies that. The plan limit is shared by all sessions.
+
+**How to apply:** measure with `tools/token_usage.py`, use the settings `session_start.py` puts in place,
+and follow skills/token-economy.md and skills/model-routing.md.
