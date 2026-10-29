@@ -24,6 +24,7 @@ import io
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -37,6 +38,7 @@ SYNC_STAMP = os.path.join(STATE, "last-sync")
 LAST_LINE = os.path.join(STATE, "last-line")
 LOCK = os.path.join(STATE, "sync.lock")
 LOG = os.path.join(STATE, "errors.log")
+STATUS = os.path.join(STATE, "sync-status.json")
 SYNC_EVERY = 0  # right after every question and answer; the lock prevents parallel syncs
 # Without this flag Windows opens a console window for every git and python call.
 NO_WINDOW = 0x08000000 if os.name == "nt" else 0
@@ -149,6 +151,10 @@ def on_prompt(hook):
         f.write(prompt)
     write("claude " + (session_name(hook) or ""), prompt, "", hook.get("session_id"))
     maybe_start_sync()
+    # Stdout of UserPromptSubmit lands in the context, so a stalled sync is noticed every turn.
+    warning = health(full=False)
+    if warning:
+        print(warning)
 
 
 def on_stop(hook):
@@ -212,6 +218,102 @@ def maybe_start_sync():
                      stderr=subprocess.DEVNULL, creationflags=NO_WINDOW, close_fds=True)
 
 
+def git(*args, timeout=120):
+    return subprocess.run(["git", "-C", BASE, *args], capture_output=True, text=True, timeout=timeout,
+                          creationflags=NO_WINDOW)
+
+
+def git_dir():
+    return git("rev-parse", "--absolute-git-dir").stdout.strip() or os.path.join(BASE, ".git")
+
+
+def set_status(error):
+    """Records whether the last sync worked. health() reads this, so a silent failure gets noticed."""
+    try:
+        old = json.load(open(STATUS, encoding="utf-8")) if os.path.exists(STATUS) else {}
+    except ValueError:
+        old = {}
+    now = time.time()
+    status = {"ok": not error, "time": now, "error": error,
+              "failing_since": (old.get("failing_since") or now) if error else None}
+    with open(STATUS, "w", encoding="utf-8") as f:
+        json.dump(status, f)
+    if error:
+        log_error(error)
+
+
+def repair():
+    """Cleans up a rebase or merge left behind by an earlier sync, without throwing work away.
+
+    A stuck .git/rebase-merge once made every sync fail silently for a week. An autostash goes back
+    into the stash list, nothing is reset."""
+    gd = git_dir()
+    on_branch = git("symbolic-ref", "-q", "HEAD").returncode == 0
+    for name in ("rebase-merge", "rebase-apply"):
+        path = os.path.join(gd, name)
+        if not os.path.isdir(path) or time.time() - os.path.getmtime(path) < 600:
+            continue
+        if not on_branch:
+            return "rebase is stuck with a detached HEAD (.git/" + name + "), finish it by hand"
+        autostash = os.path.join(path, "autostash")
+        if os.path.exists(autostash):
+            sha = open(autostash).read().strip()
+            git("stash", "store", "-m", "autostash from a stuck rebase " + time.strftime("%Y-%m-%d"), sha)
+        shutil.rmtree(path)
+        log_error("cleaned up a stuck .git/" + name + ", autostash is in git stash list")
+    merge_head = os.path.join(gd, "MERGE_HEAD")
+    if os.path.exists(merge_head) and time.time() - os.path.getmtime(merge_head) > 600:
+        return "a merge is stuck (.git/MERGE_HEAD), resolve the conflict and commit"
+    return ""
+
+
+def pull():
+    """Fetches origin with a merge. No rebase and no autostash: those hid the work of other sessions
+    in the stash list and left a rebase behind on a conflict. Journals merge with union
+    (.gitattributes); if the merge touches a file a session is editing, git refuses up front."""
+    r = git("fetch", "-q", "origin", timeout=20)
+    if r.returncode != 0:
+        return "fetch failed: " + r.stderr[-400:]
+    if not git("log", "HEAD..@{u}", "--oneline").stdout.strip():
+        return ""
+    r = git("merge", "--no-edit", "-q", "@{u}")
+    if r.returncode != 0:
+        if os.path.exists(os.path.join(git_dir(), "MERGE_HEAD")):
+            git("merge", "--abort")
+        return "merge with origin failed: " + (r.stderr or r.stdout)[-400:]
+    return ""
+
+
+def health(full=True):
+    """A warning for the session when the sync has stalled, otherwise empty. full also runs git."""
+    problems = []
+    gd = git_dir() if full else os.path.join(BASE, ".git")
+    for name in ("rebase-merge", "rebase-apply", "MERGE_HEAD"):
+        if os.path.exists(os.path.join(gd, name)):
+            problems.append(".git/" + name + " exists (a rebase or merge is stuck)")
+    try:
+        status = json.load(open(STATUS, encoding="utf-8"))
+        if not status.get("ok") and time.time() - status["failing_since"] > 900:
+            problems.append("sync failing since " + time.strftime("%Y-%m-%d %H:%M", time.localtime(status["failing_since"]))
+                            + ": " + clean(status.get("error") or "", 300))
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    if full:
+        counts = git("rev-list", "--left-right", "--count", "HEAD...@{u}").stdout.split()
+        if len(counts) == 2 and counts[0] != "0":
+            oldest = git("log", "@{u}..HEAD", "--reverse", "--format=%ct").stdout.split()
+            if oldest and time.time() - int(oldest[0]) > 1800:
+                problems.append(counts[0] + " commits not pushed (oldest " + time.strftime(
+                    "%Y-%m-%d %H:%M", time.localtime(int(oldest[0]))) + "), " + counts[1] + " behind origin")
+        stashes = [s for s in git("stash", "list").stdout.splitlines() if "autostash" in s and "checked" not in s]
+        if stashes:
+            problems.append(str(len(stashes)) + " autostash(es) in git stash list, possibly work of other sessions")
+    if not problems:
+        return ""
+    return ("WARNING cloud-alter-ego sync has stalled: " + "; ".join(problems) + ". Fix this first yourself and report "
+            "it in one sentence. Nothing is pushed while this stands.")
+
+
 def sync():
     os.makedirs(STATE, exist_ok=True)
     try:
@@ -223,27 +325,26 @@ def sync():
         fd = os.open(LOCK, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
     os.close(fd)
     try:
-        def git(*args):
-            return subprocess.run(["git", "-C", BASE, *args], capture_output=True, text=True, timeout=120,
-                                  creationflags=NO_WINDOW)
-        for _ in range(3):
+        error = repair()
+        for _ in range(0 if error else 3):
             # Only clients/ and projects/ are committed here; the rest goes with save_session.py.
             git("add", "--", "clients", "projects")
             if git("diff", "--cached", "--quiet").returncode != 0:
-                git("commit", "-m", "Auto-journal " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M"))
+                r = git("commit", "-m", "Auto-journal " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M"))
+                if r.returncode != 0:
+                    error = "commit failed: " + (r.stderr or r.stdout)[-400:]
+                    break
             if not git("remote").stdout.strip():
                 return
-            if not git("log", "@{u}..HEAD", "--oneline").stdout.strip():
-                return
-            r = git("pull", "--rebase", "--autostash")
-            if r.returncode != 0:
-                git("rebase", "--abort")
-                log_error("pull failed: " + r.stderr[-400:])
-                return
-            r = git("push")
-            if r.returncode != 0:
-                log_error("push failed: " + r.stderr[-400:])
-                return
+            error = pull()
+            if error or not git("log", "@{u}..HEAD", "--oneline").stdout.strip():
+                break
+            r = git("push", "origin", "HEAD:" + git("branch", "--show-current").stdout.strip())
+            # A push mostly fails when another device pushed a moment ago: merge again next round.
+            error = "push failed: " + r.stderr[-400:] if r.returncode != 0 else ""
+            if not error:
+                break
+        set_status(error)
     finally:
         os.remove(LOCK)
 

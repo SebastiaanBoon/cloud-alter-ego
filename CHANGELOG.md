@@ -4,6 +4,33 @@ All notable changes to this template are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] - 2026-10-29
+
+### Added
+
+- Skills `when-it-fails` (the ladder to walk before writing "cannot"), `model-routing` (who does what,
+  bulk work with the smallest model), `token-economy` (measure and reduce what sessions cost) and
+  `signing-in` (the order to try before any login).
+- `tools/token_usage.py` shows token use per session, subagent and routine for a time window.
+- `tools/session_start.py` sets `autoCompactWindow` and the idle-compact and subagent-model environment
+  variables when they are missing.
+- Sync health: `tools/auto_journal.py` writes `.auto-journal/sync-status.json`, repairs a stuck rebase or
+  merge, and prints a warning at the next prompt and at session start when the sync is stuck.
+- Working rules with background: fix the cause, build with the environment, a ticket means only that,
+  changing a client item makes you its owner, done means saved and synced, no draft while the
+  investigation runs, one session per ticket, and offer a phone route when the user is away.
+
+### Changed
+
+- `tools/auto_journal.py` pulls with fetch and merge instead of rebase and autostash, and pushes to the
+  named branch.
+- `preferences.md` is shorter, so it stays under the 9,000 character limit.
+
+### Fixed
+
+- `tools/server/session-state`: a notification arriving during a turn now clears finished background
+  tasks instead of being skipped.
+
 ## [0.4.0] - 2026-10-15
 
 ### Added
@@ -84,6 +111,7 @@ All notable changes to this template are listed here. The format follows
 - First release: session hooks (auto journal, session save, session start), installer with uninstall,
   attribution block hook, Codex notify chaining, default working rules, skills and techniques.
 
+[0.5.0]: https://github.com/SebastiaanBoon/cloud-alter-ego/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/SebastiaanBoon/cloud-alter-ego/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/SebastiaanBoon/cloud-alter-ego/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/SebastiaanBoon/cloud-alter-ego/compare/v0.1.0...v0.2.0

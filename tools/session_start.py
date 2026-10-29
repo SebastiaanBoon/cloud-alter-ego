@@ -32,6 +32,11 @@ REQUIRED_HOOKS = [
     ("PreToolUse", "Bash|PowerShell", "block_ai_attribution.py", 10),
 ]
 
+# Token-saving settings for long-lived chats (skills/token-economy.md). Only set when missing, so a
+# value you chose on a device stays. Source: code.claude.com/docs/en/settings-reference.
+REQUIRED_SETTINGS = {"autoCompactWindow": 200000}
+REQUIRED_ENV = {"CLAUDE_CODE_IDLE_COMPACT_MIN_TOKENS": "100000", "CLAUDE_CODE_SUBAGENT_MODEL": "haiku"}
+
 BLOCK_START = "<!-- cloud-alter-ego:start -->"
 BLOCK_END = "<!-- cloud-alter-ego:end -->"
 CLAUDE_MD_BLOCK = """
@@ -55,12 +60,17 @@ def preferences():
 
 
 def pull_latest():
-    """Fetch the newest context and tools first. The remote is the source of truth."""
+    """Fetch the newest context and tools first. The remote is the source of truth.
+    Returns a warning when the sync has stalled (stuck rebase, not pushed, autostash)."""
     try:
-        subprocess.run(["git", "-C", BASE, "pull", "--rebase", "--autostash", "-q"],
-                       capture_output=True, timeout=20, creationflags=NO_WINDOW)
-    except Exception:
-        pass
+        sys.path.insert(0, os.path.join(BASE, "tools"))
+        import auto_journal
+        error = auto_journal.repair() or auto_journal.pull()
+        if error:
+            auto_journal.set_status(error)
+        return auto_journal.health()
+    except Exception as e:
+        return "WARNING the cloud-alter-ego sync could not be checked: " + repr(e)[:300]
 
 
 def claude_config_dirs(create_default=False):
@@ -124,6 +134,15 @@ def ensure_hooks(config_dir):
             continue
         entries.append(hook_entry(matcher, script_name, timeout))
         changed = True
+    for key, value in REQUIRED_SETTINGS.items():
+        if key not in settings:
+            settings[key] = value
+            changed = True
+    env = settings.setdefault("env", {})
+    for key, value in REQUIRED_ENV.items():
+        if key not in env:
+            env[key] = value
+            changed = True
     if changed:
         write_json_atomic(path, settings)
     return changed
@@ -167,7 +186,7 @@ def read_hook():
 def main():
     hook = read_hook()
     session = hook.get("session_id") or ""
-    pull_latest()
+    sync_warning = pull_latest()
     try:
         ensure_setup()
     except Exception:
@@ -196,6 +215,8 @@ def main():
     if len(text) > MAX_CHARS:
         lines.insert(0, "WARNING: preferences.md is too long (" + str(len(text)) + " characters), the working rules arrive "
                      "truncated. Read preferences.md yourself and make the file shorter.")
+    if sync_warning:
+        lines.insert(0, sync_warning)
     print(json.dumps({
         "hookSpecificOutput": {
             "hookEventName": "SessionStart",
