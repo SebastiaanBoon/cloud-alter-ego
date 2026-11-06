@@ -32,7 +32,6 @@ work, delete the rest, or use them as a model for your own.
 |---|---|
 | [whatsapp-web-reading](whatsapp-web-reading.md) | Let an agent read your WhatsApp messages through WhatsApp Web and the Claude extension in Chrome |
 | [client-presentation](client-presentation.md) | A slide deck for a client, co-branded with their house style |
-| [lead-outreach](lead-outreach/README.md) | Find local businesses with an outdated or missing website and prepare personal email drafts |
 | [devops-board-update](devops-board-update.md) | Update an Azure DevOps board or backlog with the work that was finished |
 | [pipeline-incident](pipeline-incident.md) | A failed run, empty table or "the numbers are wrong" on a data platform: find the real cause, repair only the affected part |
 | [ticket-analysis](ticket-analysis.md) | Fill in environment, root cause and analysis on helpdesk tickets from the conversation, review list first |
