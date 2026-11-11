@@ -1,5 +1,16 @@
 # cloud-alter-ego
 
+> **Just want it in Claude chats, with nothing to install?** Use the Alter Ego connector: **https://cloudalterego.cafeboon.com**
+>
+> 1. In Claude, go to **Customize**, then **Connectors**, click **+ Add**, then **Add custom connector**.
+> 2. Enter a name (for example Alter Ego) and paste `https://cloudalterego.cafeboon.com/mcp`, then click **Continue** and **Add**.
+> 3. Sign in and choose where your memory lives: OneDrive, Google Drive, Dropbox, GitHub or Azure DevOps.
+> 4. Switch the connector on in a chat (**+**, then **Connectors**). Setup per storage and troubleshooting:
+>    [cloudalterego.cafeboon.com/docs.html](https://cloudalterego.cafeboon.com/docs.html).
+>
+> Team and Enterprise plans add the connector from Organization settings first. This repo, below, is the
+> version for Claude Code and Codex on your own machines.
+
 **Your cloud alter ego for AI coding agents.** It remembers what you did yesterday, on which laptop,
 with which account, and makes every agent follow your rules.
 
