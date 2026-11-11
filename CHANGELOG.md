@@ -4,6 +4,13 @@ All notable changes to this template are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- `tools/run_routine.sh` compares the allowed hours as numbers, so an hour below 10 written as `8` matches
+  `08` and the documented crontab example runs (#7).
+
 ## [0.7.0] - 2026-10-29
 
 ### Added
