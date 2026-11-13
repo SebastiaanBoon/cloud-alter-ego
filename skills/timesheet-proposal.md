@@ -23,12 +23,21 @@ client the hours and the user's own remarks from the time tracking tool, as a ch
      belongs to a client or internal project.
    - Today's calendar through the calendar connector: a client meeting counts for that client.
    - Do not read mail and chat, only when a journal line refers to it.
+   - Journals are not complete. Work done in a long-lived shared chat (monitoring, recurring checks, hotfixes)
+     may never reach a context journal. Also search today's chats (session transcripts) for the client name
+     and typical words, and read the hours from the chat timestamps (convert to local time). No journal line
+     for a client you maintain does not mean nothing happened: name that client in the question to the
+     user, never drop it silently.
+   - When the user says work is missing, that is a source: search until you have found it.
 5. Estimate hours per client:
    - A block is the first to the last journal line of an uninterrupted series (a gap over 30 minutes starts a new
      block), plus the duration of calendar appointments. Round to a quarter, minimum 0.25.
    - Loose short lines (ticket read, message answered) without a block: 0.25.
    - What is already in the tool counts as fact: propose only the difference and say what is already there.
    - No source, no hours. Invent nothing to reach a full day. Do report how many hours are covered in total today.
+   - Parallel chats overlap. Give the net hours straight away (the total equals the real working day, first to
+     last activity minus breaks) with the gross hours in a separate column. Do not propose a too high total and
+     then ask what may be shorter. Spread the overlap proportionally and say it is an estimate.
 6. Choose the activity:
    - Support contract of the client: the activity from step 2.
    - Project work with its own project: the consultancy activity on that project.

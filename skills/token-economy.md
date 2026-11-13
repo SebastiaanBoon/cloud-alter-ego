@@ -20,6 +20,11 @@ session limit went. The goal is the same result for as little of the plan limit 
 3. Big but simple work spread over many mid-size subagents, for example relabelling tens of thousands of
    records three times each.
 4. Big dumps in the context: whole files, logs, web pages, JSON of an API.
+5. Delegating small steps. Every agent result is a new turn that reads the whole context again, and an
+   agent for two or three calls costs tens of thousands of tokens by itself. A session on the largest
+   model gives an agent a block of work with a clear end result, never a single grep or check, and the
+   agent reports only that end result, no intermediate states. `tools/force_delegation.py` blocks after
+   12 direct calls and does not count Grep and Glob.
 
 ## Rules
 

@@ -54,7 +54,7 @@ lines in the same format.
 
 ## What is in the box
 
-The core is five hooks and `note.py`, all plain Python with no dependencies, on Windows, macOS and Linux.
+The core is six hooks and `note.py`, all plain Python with no dependencies, on Windows, macOS and Linux.
 Everything else is optional: take what fits your work.
 
 ### Core
@@ -69,7 +69,7 @@ Everything else is optional: take what fits your work.
 | [projects/](projects/README.md) | One folder per own project, plus the infrastructure they share |
 | [WORKFLOW.md](WORKFLOW.md) | How the hooks, contexts and syncing work |
 | `tools/install.py` | Registers the hooks, undo with `--uninstall` |
-| `tools/session_start.py`, `auto_journal.py`, `save_session.py`, `block_ai_attribution.py` | The hooks: inject rules, log every turn, save the transcript, block AI attribution |
+| `tools/session_start.py`, `auto_journal.py`, `save_session.py`, `block_ai_attribution.py`, `force_delegation.py` | The hooks: inject rules, log every turn, save the transcript, block AI attribution, push execution work to a cheaper agent |
 | `tools/note.py` | Journal lines and contexts |
 | `tools/redact.py` | Masks tokens, keys and passwords in every journal line and saved transcript before it is pushed |
 | [tests/](tests/) | `python -m pytest -q tests` |

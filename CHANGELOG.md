@@ -4,6 +4,31 @@ All notable changes to this template are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.8.0] - 2026-11-13
+
+### Added
+
+- `tools/force_delegation.py`, a PreToolUse hook: in a session on the largest model it blocks the 13th
+  direct Read or shell call in a row until an agent on Sonnet or Haiku has been started. Grep, Glob,
+  calls inside a subagent and `note.py` do not count. `CLOUD_ALTER_EGO_MAX_DIRECT` changes the limit.
+  `session_start.py` registers it on every config of the machine, `install.py` and `WORKFLOW.md` list it.
+- Tests for the delegation hook (limit, reset by a cheap agent, what is not counted).
+- `tools/redact.py` also masks long hex API keys (`key_` followed by 64 or more hex characters).
+
+### Changed
+
+- `tools/firefox_profile.py` gives every call its own profile copy (`<profile>-<pid>-<random>`), so
+  parallel sessions no longer break each other, removes the copy on quit and cleans copies of dead
+  processes. `token()` caches the token until 10 minutes before it expires, written atomically.
+- `skills/token-economy.md`: delegating small steps is the fifth big cost, with the rule to hand an agent
+  a block of work and let it report only the end result. Explained in `preferences-background.md`.
+- `skills/timesheet-proposal.md`: journals are not complete, so search the chats of the day too; give net
+  hours for overlapping parallel chats straight away, with gross hours in a separate column.
+- `skills/writing-style.md`: say missing data concretely in the first person, and no exact clock times.
+- `skills/when-it-fails.md`: a subsession without a start tool goes through a spawn-task chip.
+- `preferences.md`: never guess which file, mail, ticket or pipeline is meant, nothing unrequested, done
+  means visible where the user looks, and delegate blocks of work.
+
 ## [0.7.0] - 2026-10-29
 
 ### Added

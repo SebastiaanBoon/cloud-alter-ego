@@ -79,3 +79,33 @@ def test_attribution_lines_are_blocked():
     assert run_hook('git commit -m "Fix\n\nCo-Authored-By: Claude <noreply@anthropic.com>"').returncode == 2
     assert run_hook('gh pr create --body "Generated with [Claude Code](https://claude.com)"').returncode == 2
     assert run_hook('git commit -m "Fix the login"').returncode == 0
+
+
+def _delegation(tmp_path, payloads, model="claude-opus-4"):
+    transcript = tmp_path / "t.jsonl"
+    transcript.write_text(json.dumps({"type": "assistant", "message": {"model": model}}) + "\n")
+    env = dict(os.environ, LOCALAPPDATA=str(tmp_path), CLAUDE_CODE_SUBAGENT_MODEL="")
+    codes = []
+    for p in payloads:
+        p = dict({"session_id": "s1", "transcript_path": str(transcript)}, **p)
+        codes.append(subprocess.run([sys.executable, os.path.join(TOOLS, "force_delegation.py")], input=json.dumps(p),
+                                    capture_output=True, text=True, env=env).returncode)
+    return codes
+
+
+def test_delegation_blocks_after_twelve_direct_calls_and_resets_on_cheap_agent(tmp_path):
+    read = {"tool_name": "Read", "tool_input": {"file_path": "x"}}
+    assert _delegation(tmp_path, [read] * 13) == [0] * 12 + [2]
+    agent = {"tool_name": "Agent", "tool_input": {"model": "haiku"}}
+    assert _delegation(tmp_path, [agent, read]) == [0, 0]
+
+
+def test_delegation_ignores_small_models_subagents_and_grep(tmp_path):
+    read = {"tool_name": "Read", "tool_input": {}}
+    assert set(_delegation(tmp_path, [read] * 15, model="claude-sonnet-4")) == {0}
+    assert set(_delegation(tmp_path, [dict(read, agent_id="a")] * 15)) == {0}
+    assert set(_delegation(tmp_path, [{"tool_name": "Grep", "tool_input": {}}] * 15)) == {0}
+
+
+def test_runway_style_hex_keys_are_masked():
+    assert "key_" + "ab12" * 16 not in redact("k key_" + "ab12" * 16)

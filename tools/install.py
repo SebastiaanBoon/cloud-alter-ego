@@ -9,6 +9,7 @@ What it does:
        Stop              -> tools/auto_journal.py    (log the answer, push)
        SessionEnd        -> tools/save_session.py    (save the transcript, commit, push)
        PreToolUse        -> tools/block_ai_attribution.py (no AI attribution in commits)
+       PreToolUse        -> tools/force_delegation.py (execution work goes to a cheaper agent)
   2. Adds a short pointer block to the global CLAUDE.md of each config dir.
   3. Turns off Claude's commit and PR attribution lines (skip with --keep-attribution).
   4. If Codex is installed: logs every Codex turn via `notify` (an existing notify program keeps

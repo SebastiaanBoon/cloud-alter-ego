@@ -57,3 +57,4 @@ real error message and what you tried? If not, go back.
 ## Self-learning
 
 A route that worked and is not in the table goes in the table, as one row, straight away.
+| A subsession for a ticket is needed and the start tool is missing in the client chat | cannot, or let another chat start it (it ends up under the wrong chat) | a spawn-task chip from the client chat itself, so the subsession lands under that chat |

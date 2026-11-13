@@ -14,6 +14,7 @@ PATTERNS = [
     re.compile(r"\bgh[pousr]_[A-Za-z0-9]{36,}"),  # GitHub tokens
     re.compile(r"\bgithub_pat_[A-Za-z0-9_]{50,}"),
     re.compile(r"\bsk-(?:ant-|proj-)?[A-Za-z0-9_-]{20,}"),  # Anthropic and OpenAI keys
+    re.compile(r"\bkey_[0-9a-f]{64,}"),  # long hex API keys
     re.compile(r"\bxox[abprs]-[A-Za-z0-9-]{10,}"),  # Slack
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),  # AWS access key id
     re.compile(r"\bAIza[0-9A-Za-z_-]{35}"),  # Google API key

@@ -30,6 +30,7 @@ REQUIRED_HOOKS = [
     ("UserPromptSubmit", None, "auto_journal.py", 30),
     ("Stop", None, "auto_journal.py", 30),
     ("PreToolUse", "Bash|PowerShell", "block_ai_attribution.py", 10),
+    ("PreToolUse", "Read|Grep|Glob|Bash|PowerShell|Agent", "force_delegation.py", 10),
 ]
 
 # Token-saving settings for long-lived chats (skills/token-economy.md). Only set when missing, so a

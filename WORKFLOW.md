@@ -12,6 +12,7 @@ meaningful layer is one short line per turn that the agent writes itself.
 | Stop | `tools/auto_journal.py` | Writes the answer, shortened, and pushes; warns when the transcript stops being written |
 | SessionEnd | `tools/save_session.py` | Saves the raw transcript and a readable `.md` in the context's `sessions/`, commits everything, pulls with rebase and pushes |
 | PreToolUse (Bash, PowerShell) | `tools/block_ai_attribution.py` | Blocks any command with an AI attribution line |
+| PreToolUse (Read, Grep, Glob, Bash, PowerShell, Agent) | `tools/force_delegation.py` | In a session on the largest model, blocks the 13th direct Read or shell call in a row until an agent on Sonnet or Haiku has been started |
 
 `tools/install.py` registers all of them once. After that, `session_start.py` keeps every Claude
 Code config on the machine in line by itself (`~/.claude`, any `~/.claude-<name>` and

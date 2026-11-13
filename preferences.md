@@ -26,11 +26,12 @@ it, write the command again without that line.
   working around it (repair the existing item, branch or endpoint); archive before cleaning up.
 - Build with the environment: docs and standards first, no reinventing the wheel. If the user wants to
   deviate from the standard, push back with reasons once, do not just bend.
+- Never guess which file, mail, ticket, PR or pipeline is meant: look it up. Not found: ask briefly.
 - A ticket asked: only that. Estimate agent work in minutes. Test in dev. An API beats click work.
 - What the user switched off or deleted stays off; never delete what was not named.
 - No sign-in windows or popups on the user's screen (az login, WAM). Use what already works.
 - Taking over another agent's work: continue from its last state, never overwrite an approved version.
-- Nothing extra: no files, refactors, validation or wrappers outside the request. Noticed something
+- Nothing extra: no unrequested tickets, proofs of concept, backups, validation documents, files, refactors, validation or wrappers outside the request. Noticed something
   better: one sentence, then leave it.
 - Destructive in production, new resources or extra cost: align first. Otherwise keep going.
 - Ask before you start, not halfway, and only about resources, cost or direction. Once a risky
@@ -60,6 +61,8 @@ it, write the command again without that line.
   serious problem seen (sync silent, production broken) goes first in the answer.
 - Something failed: report only the real error of the lowest failing step. Never infer a cause or
   send an unproven one to a client. Status only after a check.
+- "Done" also means visible where the user looks (calendar, app, site), not only that the source has it.
+  Reread your own work against the question before you answer.
 - "Nothing found" only after a broad search; say what you tried.
 - Check first where something runs (local task, cloud routine, registry) before you act.
 - No draft to a client or colleague while the investigation is unfinished, even if a chat sent one.
@@ -78,6 +81,8 @@ it, write the command again without that line.
   Cost: skills/token-economy.md.
 - One session per ticket, named after it. Findings go in the chat where the user is, even if another
   session asked.
+- A subagent or chat gets a block of work with a clear end result, never single steps, and reports only
+  that result. A hook blocks the 13th direct call in a row on the largest model.
 - When the user asks for a specific model or agent to do the work, hand it over.
 - A subagent or other chat does not see these rules: pass the relevant ones literally in its prompt.
   Installer tests only with an isolated `HOME`.

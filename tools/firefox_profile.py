@@ -21,8 +21,12 @@ Needs `pip install selenium msal`. Windows; set FIREFOX_ROOT and FIREFOX_EXE for
 """
 
 import argparse
+import atexit
 import configparser
+import hashlib
+import json
 import os
+import secrets
 import shutil
 import sqlite3
 import subprocess
@@ -35,7 +39,8 @@ LOCAL = Path(os.environ.get("LOCALAPPDATA", Path.home() / ".local" / "share"))
 STORE_ROOT = LOCAL / "Packages" / "Mozilla.Firefox_n80bbvh6b1yt2" / "LocalCache" / "Roaming" / "Mozilla" / "Firefox"
 CLASSIC_ROOT = Path(os.environ.get("APPDATA", Path.home())) / "Mozilla" / "Firefox"
 COPY_ROOT = LOCAL / "claude-firefox"
-SKIP = {"parent.lock", "lock", ".parentlock", "cache2", "startupCache", "crashes", "minidumps", "saved-telemetry-pings", "datareporting"}
+TOKEN_CACHE = COPY_ROOT / "tokencache"
+SKIP = {"parent.lock", "lock", ".parentlock", "cache2", "startupCache", "crashes", "minidumps", "saved-telemetry-pings", "datareporting", "bookmarkbackups"}
 
 
 def firefox_root():
@@ -104,14 +109,47 @@ def close_old_copy(target):
         time.sleep(2)
 
 
+def pid_alive(pid):
+    if os.name == "nt":
+        import ctypes
+
+        handle = ctypes.windll.kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not handle:
+            return False
+        code = ctypes.c_ulong()
+        ctypes.windll.kernel32.GetExitCodeProcess(handle, ctypes.byref(code))
+        ctypes.windll.kernel32.CloseHandle(handle)
+        return code.value == 259  # STILL_ACTIVE
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    return True
+
+
+def clean_dead_copies():
+    """Folders <profile>-<pid>-<random> of processes that no longer exist. Live processes are left alone."""
+    if not COPY_ROOT.exists():
+        return
+    for folder in COPY_ROOT.iterdir():
+        parts = folder.name.rsplit("-", 2)
+        if folder.is_dir() and len(parts) == 3 and parts[1].isdigit() and not pid_alive(int(parts[1])):
+            shutil.rmtree(folder, ignore_errors=True)
+
+
+def clean_own_copy(target):
+    close_old_copy(target)
+    shutil.rmtree(target, ignore_errors=True)
+
+
 def copy_profile(name):
     found = profiles()
     if name not in found:
         sys.exit(f"Profile '{name}' does not exist. Choose from: {', '.join(found)}")
-    target = COPY_ROOT / name
-    close_old_copy(target)
-    if target.exists():
-        shutil.rmtree(target, ignore_errors=True)
+    clean_dead_copies()
+    # Every call gets its own folder, so simultaneous sessions never break each other's Firefox or copy.
+    target = COPY_ROOT / f"{name}-{os.getpid()}-{secrets.token_hex(3)}"
+    atexit.register(clean_own_copy, target)
     shutil.copytree(found[name], target, ignore=lambda d, names: [n for n in names if n in SKIP or n.endswith("-shm")], dirs_exist_ok=True)
     # Without the storeID the copy does not register itself as a new profile in the user's profile group.
     prefs = target / "prefs.js"
@@ -128,14 +166,28 @@ def open_profile(name, headless=True):
     options = Options()
     options.binary_location = firefox_exe()
     options.add_argument("-profile")
-    options.add_argument(str(copy_profile(name)))
+    target = copy_profile(name)
+    options.add_argument(str(target))
     if headless:
         options.add_argument("-headless")
     # Teams on the web stays on its loading screen as soon as it sees an automated browser.
     options.set_preference("dom.webdriver.enabled", False)
     options.set_preference("useAutomationExtension", False)
     options.set_preference("browser.profiles.enabled", False)
-    driver = webdriver.Firefox(options=options)
+    try:
+        driver = webdriver.Firefox(options=options)
+    except Exception:
+        clean_own_copy(target)
+        raise
+    quit_original = driver.quit
+
+    def quit_and_clean():
+        try:
+            quit_original()
+        finally:
+            clean_own_copy(target)
+
+    driver.quit = quit_and_clean
     driver.set_window_size(1600, 1000)
     return driver
 
@@ -144,6 +196,24 @@ GRAPH_CLI = "14d82eec-204b-4c2f-b7e8-296a70dab67e"
 
 
 def token(name, scopes, client_id=GRAPH_CLI, wait=90):
+    """Cached token if it is valid for at least 10 more minutes, else a new one through the profile browser."""
+    key = hashlib.sha256(json.dumps([name, sorted(scopes), client_id]).encode()).hexdigest()[:32]
+    cache_file = TOKEN_CACHE / f"{key}.json"
+    try:
+        cached = json.loads(cache_file.read_text(encoding="utf-8"))
+        if cached["expires_on"] > time.time() + 600:
+            return cached["access_token"]
+    except (OSError, ValueError, KeyError):
+        pass
+    fresh = _token_via_browser(name, scopes, client_id, wait)
+    TOKEN_CACHE.mkdir(parents=True, exist_ok=True)
+    tmp = cache_file.with_name(f"{cache_file.name}.{os.getpid()}.tmp")
+    tmp.write_text(json.dumps(fresh), encoding="utf-8")
+    os.replace(tmp, cache_file)  # atomic, parallel sessions never see half a file
+    return fresh["access_token"]
+
+
+def _token_via_browser(name, scopes, client_id, wait):
     """Auth code flow in the profile browser; the session cookies of the profile do the login."""
     import urllib.parse
 
@@ -168,7 +238,7 @@ def token(name, scopes, client_id=GRAPH_CLI, wait=90):
                 result = app.acquire_token_by_auth_code_flow(flow, answer)
                 if "access_token" not in result:
                     sys.exit(f"No token: {result.get('error_description', result)}")
-                return result["access_token"]
+                return {"access_token": result["access_token"], "expires_on": time.time() + int(result.get("expires_in", 0))}
             time.sleep(1)
         shot = COPY_ROOT / f"{name}-login.png"
         driver.save_screenshot(str(shot))

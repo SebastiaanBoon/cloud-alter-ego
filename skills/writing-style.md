@@ -50,6 +50,8 @@ against a few real replies before you trust it.
   "probably").
 - Admit an own mistake shortly.
 - Numbers and hours concrete: "about 12 minutes", "at most 4 hours".
+- Missing data concrete and in the first person: "I do not see their hours in system X", never vague
+  ("the systems we read in").
 
 ## Structure per kind of message
 
@@ -76,6 +78,8 @@ variants the user really uses, for example "If you have questions, let me know."
   question. No estimates, costs or explanations up front.
 - No extra sentence that adds nothing. No summary of what the client already knows. No date or time of the
   incident unless needed.
+- No exact clock times such as "at 05:15" or "at 10:29": that reads as AI. Say "last night", "this
+  morning", "by now".
 - No long apologies, no "I hope that", no "you are welcome", no "thanks in advance".
 - No job title or phone number under the name.
 - No to-dos or notes for the user under the draft.

@@ -401,6 +401,16 @@ A draft to a client or colleague went out while the cause was still unclear, and
 **How to apply:** write nothing for a third party until the investigation is finished, even if another
 chat delivered a draft. Findings go in the chat where the user is.
 
+## Delegating in blocks
+
+A large-model session did every step itself, and delegating single greps was no better: every agent
+result is a new turn that reads the whole context again, and a small agent costs tens of thousands of
+tokens on its own. An instruction alone did not change the behaviour.
+
+**How to apply:** give an agent a block of work with a clear end result and let it report only that.
+`tools/force_delegation.py` blocks the 13th direct Read or shell call in a row on the largest model until
+an agent on a smaller model has been started (Grep and Glob do not count, `note.py` is free).
+
 ## Cost of long sessions
 
 Resuming a large session after a pause rereads the whole context as a cache write, and a routine with one
