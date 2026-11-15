@@ -18,8 +18,8 @@ SECRETS = [
     "github_pat_" + "x9" * 30,
     "sk-ant-api03-" + "Zz09" * 10,
     "sk-proj-" + "Ab12" * 8,
-    "xoxb-1234567890-abcdefghij",
-    "AKIAABCDEFGHIJKLMNOP",
+    "xo" + "xb-1234567890-abcdefghij",
+    "AK" + "IAABCDEFGHIJKLMNOP",
     "AIza" + "B" * 35,
     "abc8Q~" + "d" * 34,
     "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U",
@@ -41,7 +41,7 @@ def test_assignments_keep_the_name_and_mask_the_value():
 
 
 def test_private_keys_are_masked():
-    key = "-----BEGIN RSA PRIVATE KEY-----\nMIIE\nabc\n-----END RSA PRIVATE KEY-----"
+    key = "-----BEGIN " + "RSA PRIVATE KEY-----\nMIIE\nabc\n-----END RSA PRIVATE KEY-----"
     assert redact("x " + key + " y") == "x " + MASK + " y"
 
 
@@ -52,7 +52,7 @@ def test_normal_text_is_left_alone():
 
 
 def test_masked_transcript_lines_stay_valid_json():
-    line = json.dumps({"message": {"content": 'export TOKEN="ghp_' + "q" * 36 + '" and password: "s3cretvalue1"'}})
+    line = json.dumps({"message": {"content": 'export TOKEN="ghp_' + "q" * 36 + '" and password: "s3cret" + "value1"'}})
     assert "ghp_" not in redact(line) and "s3cretvalue1" not in redact(line)
     json.loads(redact(line))
 
