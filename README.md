@@ -23,9 +23,10 @@ There are two ways to get the same memory:
 
 - **This repo** is for people who work with Claude Code or Codex on their own machines. Hooks log every turn,
   save transcripts and inject your rules without the agent having to remember anything.
-- **The Alter Ego connector**, a remote MCP server, is for chats in Claude or ChatGPT, on the
-  web or the phone, without installing anything. It keeps the memory in your own OneDrive, Google Drive,
-  Dropbox, GitHub or Azure DevOps.
+- **The Alter Ego connector**, a remote MCP server, is for chats in Claude, ChatGPT, Gemini and any AI chat with MCP, on the
+  web or the phone, without installing anything. It logs every question by itself, so you do not have to put
+  anything in your own account or settings, and you can have instructions saved for a client, project, task or tool.
+  It keeps the memory in your own OneDrive, Google Drive, Dropbox, GitHub or Azure DevOps.
 
 They work together: point the connector at the GitHub or Azure DevOps copy of this repo and it reads
 `preferences.md`, `identity.md`, `clients/`, `projects/` and `skills/` as they are, and writes journal
