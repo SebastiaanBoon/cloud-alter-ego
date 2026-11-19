@@ -22,7 +22,13 @@ LOGDIR="$HOME/.local/share/routines"; mkdir -p "$LOGDIR/work" "$LOGDIR/keys"
 LOG="$LOGDIR/$NAME.log"
 log() { echo "$(date -Is) $*" >> "$LOG"; }
 
-if [ -n "$HOURS" ] && [[ ",$HOURS," != *",$(date +%H),"* ]]; then exit 0; fi
+if [ -n "$HOURS" ]; then
+  # Compare as numbers: date +%H is zero-padded ("08"), so "8" and "08" must both match.
+  NOW=$((10#$(date +%H))); MATCH=
+  IFS=, read -ra ALLOWED <<< "$HOURS"
+  for h in "${ALLOWED[@]}"; do [ $((10#$h)) -eq "$NOW" ] && MATCH=1; done
+  [ -n "$MATCH" ] || exit 0
+fi
 
 # Anti double-run: one worker per routine.
 exec 9>"$LOGDIR/$NAME.lock"
