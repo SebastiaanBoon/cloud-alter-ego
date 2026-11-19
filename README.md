@@ -110,6 +110,37 @@ Everything else is optional: take what fits your work.
 - Journals use a union merge (`.gitattributes`), so parallel sessions never block each other on a
   journal conflict.
 
+## Concurrent writes
+
+Two assistants can write to your memory at the same time, from this repo or through the connector. What
+happens depends on the part that writes.
+
+**This repo (hooks).** Every device has its own clone. `auto_journal.py` fetches, merges and pushes after
+each turn. Journals (`**/journal/*.md`) use git's union merge, so lines from two sessions are both kept.
+Any other file is a normal git merge: if two devices edit the same lines, git refuses the merge and the
+sync reports it instead of overwriting anything. Git keeps the full history.
+
+**The connector.** `remember` and `log` read the file, add to it and write it back (`update` in
+`storage.py`). `write_file` replaces the whole file. Per user, storage and path the connector runs these
+one at a time inside its process. On top of that, a write that carries the version it read is refused
+when the file changed in between. The connector then reads again and retries, up to five times, and after
+that it answers with an error and writes nothing.
+
+| Storage | `remember` and `log` | `write_file` | History |
+| --- | --- | --- | --- |
+| GitHub | file `sha` is checked, retry on a conflict | same check, but it writes your text again after a retry, so the last write wins | one commit per write |
+| Azure DevOps | the branch head is checked, retry on a conflict | same check, last write wins | one commit per write |
+| OneDrive | `eTag` is checked, retry on a conflict | no check, last write wins | none from the connector |
+| Dropbox | file `rev` is checked, retry on a conflict | no check, last write wins | none from the connector |
+| Google Drive | no version check, only the lock inside the connector | no check, last write wins | none from the connector |
+
+So two assistants that log or remember at the same moment both get their line saved on every storage,
+as long as they go through the same connector. On Google Drive a change made outside the connector
+between its read and its write, such as a manual edit, is overwritten. Two assistants that use
+`write_file` on the same file at the same moment end with the text of the one that wrote last, on every
+storage. The connector does not read, compare or restore older versions. OneDrive, Google Drive and
+Dropbox keep file versions themselves, according to your own account and plan.
+
 ## Requirements
 
 - Claude Code (any plan that supports hooks), optionally Codex.
